@@ -56,7 +56,7 @@ st.title("🔮 DASHBOARD THẦN SỐ HỌC CHUYÊN SÂU 2026")
 
 with st.sidebar:
     st.header("📍 Hồ Sơ Cá Nhân")
-    name_input = st.text_input("Họ và Tên", placeholder="Ví dụ: Lê Thị Mỹ")
+    name_input = st.text_input("Họ và Tên", placeholder="Ví dụ: Lưu Xuân Quảng")
     date_input = st.date_input("Ngày sinh", min_value=datetime(1950, 1, 1))
     btn = st.button("🚀 KHÁM PHÁ ĐỊNH MỆNH")
 
@@ -90,3 +90,4 @@ if btn and name_input:
             st.write(res["tinh_duyen"])
 else:
     st.info("👋 Nhập thông tin bên trái để xem kết quả chuyên nghiệp!")
+
