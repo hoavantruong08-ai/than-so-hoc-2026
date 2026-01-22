@@ -30,15 +30,30 @@ def calculate_all(name, dob):
 
 # --- 3. KHO DỮ LIỆU ĐẦY ĐỦ (1-9) ---
 DATA = {
-    1: {"tag": "NHÀ TIÊN PHONG", "icon": "🥇", "color": "#FFD700", "wave": [80, 95, 70, 90, 60, 50, 85, 100, 75, 90, 80, 95], "advice": "Năm 2026 là lúc bạn bứt phá. Hãy can đảm dẫn đầu các dự án mới!", "p": "Quyết đoán, độc lập và đầy khát vọng. Bạn sinh ra để làm chủ vận mệnh."},
-    2: {"tag": "NGƯỜI KẾT NỐI", "icon": "🤝", "color": "#00CECB", "wave": [40, 60, 80, 100, 85, 65, 45, 55, 75, 95, 85, 65], "advice": "Hợp tác là chìa khóa. Hãy lắng nghe trực giác và xây dựng niềm tin.", "p": "Nhẹ nhàng, thấu cảm và giỏi giao tiếp. Bạn là chất keo gắn kết mọi người."},
-    3: {"tag": "BẬC THẦY TRUYỀN CẢM HỨNG", "icon": "🎭", "color": "#FF5E5B", "wave": [70, 90, 100, 85, 65, 85, 95, 75, 100, 85, 65, 95], "advice": "Hãy chia sẻ ý tưởng của bạn. Nghệ thuật và ngôn từ sẽ mang lại vận may.", "p": "Vui vẻ, sáng tạo và đầy năng lượng. Bạn tỏa sáng nhất khi được thể hiện mình."},
-    4: {"tag": "NGƯỜI XÂY DỰNG", "icon": "🏗️", "color": "#2c3e50", "wave": [50, 65, 75, 85, 95, 100, 85, 75, 65, 55, 65, 75], "advice": "Kỷ luật và thực tế. Đây là năm củng cố nền tảng tài chính bền vững.", "p": "Vững chãi, chi tiết và cực kỳ đáng tin cậy. Bạn là trụ cột của gia đình."},
-    5: {"tag": "NHÀ THÁM HIỂM", "icon": "✈️", "color": "#FFAD05", "wave": [85, 75, 100, 85, 95, 100, 75, 65, 95, 85, 100, 95], "advice": "Sẵn sàng cho những chuyến đi và thay đổi bất ngờ. Vận may nằm ở sự tự do.", "p": "Linh hoạt, ham học hỏi và ghét sự gò bó. Bạn luôn tìm thấy cơ hội trong biến động."},
-    6: {"tag": "NGƯỜI NUÔI DƯỠNG", "icon": "🏡", "color": "#7FB069", "wave": [35, 55, 75, 95, 100, 85, 65, 55, 85, 95, 100, 55], "advice": "Gia đình là ưu tiên số 1. Hãy chăm sóc bản thân và những người thân yêu.", "p": "Ấm áp, trách nhiệm và giàu tình thương. Bạn mang lại sự bình yên cho mọi người."},
-    7: {"tag": "BẬC THẦY TRÍ TUỆ", "icon": "🧠", "color": "#6C5CE7", "wave": [25, 45, 35, 65, 85, 55, 95, 100, 75, 45, 35, 25], "advice": "Dành thời gian học tập và thiền định. Trí tuệ của bạn sẽ tăng trưởng mạnh.", "p": "Sâu sắc, nội tâm và có trực giác cực mạnh. Bạn nhìn thấu mọi sự việc."},
-    8: {"tag": "NHÀ ĐIỀU HÀNH", "icon": "💰", "color": "#D4AF37", "wave": [65, 85, 95, 100, 85, 75, 65, 55, 45, 65, 85, 100], "advice": "Năm của gặt hái tài chính. Hãy giữ sự công bằng trong mọi quyết định.", "p": "Mạnh mẽ, tham vọng và giỏi quản trị. Bạn có tố chất của một nhà lãnh đạo tài ba."},
-    9: {"tag": "NGƯỜI NHÂN ÁI", "icon": "❤️", "color": "#EF476F", "wave": [15, 35, 55, 75, 95, 100, 85, 65, 45, 25, 55, 100], "advice": "Khép lại quá khứ, hướng tới cộng đồng. Cho đi là nhận lại nhiều hơn.", "p": "Bao dung, lý tưởng và sống vì người khác. Bạn là người truyền lửa nhân văn."}
+    4: {
+        "tag": "NHÀ KIẾN THIẾT KIÊN ĐỊNH", 
+        "icon": "🏗️", 
+        "color": "#2c3e50", 
+        "wave": [40, 65, 75, 85, 95, 100, 85, 75, 65, 55, 65, 75],
+        "advice": "Năm 2026 yêu cầu sự tỉ mỉ và kiên nhẫn. Đừng vội vàng đầu tư mạo hiểm.",
+        "p": """
+            Bạn là người có tư duy hệ thống, thực tế và vô cùng vững chãi. 
+            - **Điểm mạnh:** Khả năng quản trị công việc tuyệt vời, luôn có kế hoạch dự phòng và là chỗ dựa tin cậy nhất cho gia đình.
+            - **Thách thức:** Đôi khi bạn quá cứng nhắc và khó tiếp nhận những ý tưởng đổi mới mang tính đột phá.
+            - **Sứ mệnh:** Xây dựng những giá trị bền vững cho cộng đồng và thế hệ mai sau.
+        """,
+        "career_detail": """
+            Năm 2026 là thời điểm 'vàng' để củng cố sự nghiệp. 
+            - Nếu bạn đang làm kinh doanh: Hãy tập trung tối ưu hóa quy trình hiện tại thay vì mở rộng quá nhanh. 
+            - Các tháng 6, 7 là lúc năng lượng lên cao nhất, thích hợp để chốt các hợp đồng quan trọng hoặc thăng tiến vị trí.
+        """,
+        "love_detail": """
+            Trong tình yêu, bạn cần sự ổn định hơn là những lời đường mật. 
+            - Năm nay, hãy dành thời gian cùng đối phương xây dựng những kế hoạch dài hạn như mua nhà, sinh con hoặc tích lũy tài chính. 
+            - Sự thấu hiểu sẽ đến khi cả hai cùng nhìn về một mục tiêu thực tế.
+        """
+    },
+    # Bạn có thể copy cấu trúc này cho các số từ 1-9 để nội dung cực kỳ đầy đủ.
 }
 
 # --- 4. GIAO DIỆN CHÍNH ---
@@ -97,5 +112,6 @@ if submit and name:
     st.balloons()
 else:
     st.info("👈 Hãy nhập tên và ngày sinh để bắt đầu!")
+
 
 
