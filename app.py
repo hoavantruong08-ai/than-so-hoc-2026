@@ -119,7 +119,7 @@ st.markdown("---")
 
 with st.sidebar:
     st.header("🔑 Thông Tin Tra Cứu")
-    name = st.text_input("Nhập Họ và Tên", "Hoa Xuân Trường")
+    name = st.text_input("Nhập Họ và Tên", "Văn Tiến Khoa")
     
     # Sửa lỗi lịch: Cho phép chọn thoải mái từ 1950
     dob = st.date_input(
@@ -170,3 +170,4 @@ if submit and name:
     st.balloons()
 else:
     st.info("👈 Hãy nhập tên và ngày sinh ở cột bên trái để bắt đầu tra cứu!")
+
