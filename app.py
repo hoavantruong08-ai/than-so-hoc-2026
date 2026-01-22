@@ -28,7 +28,7 @@ def calculate_all(name, dob):
     d_num = get_root_number(b_num + len(name))
     return b_num, d_num
 
-# --- 3. KHO DỮ LIỆU ĐẦY ĐỦ (1-9) ---
+# --- 3. ĐẠI TỪ ĐIỂN DỮ LIỆU ĐẦY ĐỦ (1-9) ---
 EXTENDED_DATA = {
     1: {
         "tag": "NHÀ TIÊN PHONG ĐỘC LẬP", "icon": "🥇", "color": "#FFD700",
@@ -112,6 +112,7 @@ EXTENDED_DATA = {
         "month_tips": "T12: Kết thúc một chu kỳ cũ để đón nhận vận may mới."
     }
 }
+
 # --- 4. GIAO DIỆN CHÍNH ---
 st.title("🔮 BẢN ĐỒ VẬN MỆNH CHI TIẾT 2026")
 st.markdown("---")
@@ -120,7 +121,7 @@ with st.sidebar:
     st.header("🔑 Thông Tin Tra Cứu")
     name = st.text_input("Nhập Họ và Tên", "Hoa Xuân Trường")
     
-    # SỬA LỖI LỊCH: Mở rộng năm từ 1950 đến 2026
+    # Sửa lỗi lịch: Cho phép chọn thoải mái từ 1950
     dob = st.date_input(
         "Chọn Ngày Sinh", 
         value=datetime(1990, 1, 1),
@@ -132,8 +133,8 @@ with st.sidebar:
 if submit and name:
     b_num, d_num = calculate_all(name, dob)
     
-    # SỬA LỖI KEYERROR: Dùng hàm .get() để luôn có dữ liệu dự phòng
-    res = DATA.get(b_num, DATA[1])
+    # LOGIC AN TOÀN: Tìm trong EXTENDED_DATA, nếu không thấy lấy số 1 làm mặc định
+    res = EXTENDED_DATA.get(b_num, EXTENDED_DATA[1])
 
     col1, col2 = st.columns([1, 2], gap="large")
 
@@ -141,28 +142,31 @@ if submit and name:
         st.metric("SỐ CHỦ ĐẠO", b_num)
         st.metric("SỐ ĐỊNH MỆNH", d_num)
         st.markdown(f"### {res['icon']} {res['tag']}")
-        st.markdown(f"<div class='advice-box'><b>💡 Lời khuyên 2026:</b><br>{res['advice']}</div>", unsafe_allow_html=True)
-        st.write(f"**🎭 Tính cách:** {res['p']}")
+        st.info(res['summary'])
+        st.markdown(f"<div class='advice-box'><b>📅 Lời khuyên tháng:</b> {res['month_tips']}</div>", unsafe_allow_html=True)
 
     with col2:
         st.subheader("📈 Biểu Đồ Nhịp Sinh Học & Vận Thế 2026")
         chart_data = pd.DataFrame(res["wave"], index=[f"T{i}" for i in range(1,13)], columns=["Năng lượng"])
         st.line_chart(chart_data, color=res["color"])
 
+        with st.expander("🎭 CHI TIẾT NHÂN CÁCH", expanded=True):
+            st.markdown(res['personality'])
         with st.expander("💼 SỰ NGHIỆP & TÀI CHÍNH"):
-            st.write("Dựa trên biểu đồ, các tháng có đỉnh cao năng lượng là lúc bạn nên hành động mạnh mẽ nhất để đạt được mục tiêu tài chính.")
-        with st.expander("💖 TÌNH DUYÊN & MỐI QUAN HỆ"):
-            st.write("Cân bằng cảm xúc vào những tháng năng lượng thấp để giữ gìn sự hòa hợp trong gia đình.")
+            st.write(res['career'])
+        with st.expander("💖 DỰ BÁO TÌNH DUYÊN"):
+            st.write(res['love'])
 
     # NÚT CHIA SẺ
     st.markdown("---")
     st.markdown("<h4 style='text-align: center;'>📢 Chia sẻ kết quả cho bạn bè</h4>", unsafe_allow_html=True)
     share_url = "https://xem-than-so-hoc-2026.streamlit.app"
     c1, c2 = st.columns(2)
-    c1.markdown(f'<a href="https://www.facebook.com/sharer/sharer.php?u={share_url}" target="_blank"><button style="width:100%; background:#1877F2; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Chia sẻ Facebook</button></a>', unsafe_allow_html=True)
-    c2.markdown(f'<a href="https://zalo.me/s/share/?url={share_url}" target="_blank"><button style="width:100%; background:#0068FF; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Chia sẻ Zalo</button></a>', unsafe_allow_html=True)
+    with c1:
+        st.markdown(f'<a href="https://www.facebook.com/sharer/sharer.php?u={share_url}" target="_blank"><button style="width:100%; background:#1877F2; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Chia sẻ Facebook</button></a>', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<a href="https://zalo.me/s/share/?url={share_url}" target="_blank"><button style="width:100%; background:#0068FF; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Chia sẻ Zalo</button></a>', unsafe_allow_html=True)
     
     st.balloons()
 else:
-    st.info("👈 Hãy nhập thông tin bên trái để khám phá vận mệnh!")
-
+    st.info("👈 Hãy nhập tên và ngày sinh ở cột bên trái để bắt đầu tra cứu!")
