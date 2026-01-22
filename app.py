@@ -32,40 +32,54 @@ def calculate_all(name, dob):
 # --- 3. KHO DỮ LIỆU ĐỒ SỘ (Ví dụ chi tiết cho các số) ---
 # Ở đây mình viết mẫu rất dài cho số 4 (trong hình của bạn) và các số khác bạn có thể copy tương tự
 EXTENDED_DATA = {
-    4: {
-        "tag": "NHÀ KIẾN THIẾT KIÊN ĐỊNH",
-        "icon": "🏗️",
-        "color": "#2c3e50",
-        "wave": [40, 45, 60, 55, 75, 90, 100, 85, 70, 60, 55, 80],
-        "summary": "Số 4 là hiện thân của sự vững chãi, kỷ luật và thực tế. Bạn là cái neo trong mọi giông bão.",
+    1: {
+        "tag": "NHÀ TIÊN PHONG ĐỘC LẬP", "icon": "🥇", "color": "#FFD700",
+        "wave": [80, 100, 70, 90, 60, 50, 80, 100, 70, 90, 85, 95],
+        "summary": "Số 1 đại diện cho sự khởi đầu, lòng can đảm và ý chí dẫn đầu tuyệt vời.",
         "personality": """
-            - **Ưu điểm:** Bạn có khả năng tổ chức tuyệt vời, cực kỳ chi tiết và đáng tin cậy. Khi mọi người bỏ cuộc, bạn là người cuối cùng ở lại để hoàn thành công việc.
-            - **Nhược điểm:** Đôi khi quá cứng nhắc, bảo thủ và khó thích nghi với sự thay đổi đột ngột. Bạn dễ bị căng thẳng nếu kế hoạch không đi đúng lộ trình.
-            - **Lời khuyên:** Hãy học cách thả lỏng và chấp nhận rằng đôi khi sự hỗn loạn cũng mang lại cơ hội.
+            - **Ưu điểm:** Bạn có khả năng lãnh đạo bẩm sinh, quyết đoán và luôn tiến về phía trước. Bạn không sợ khó khăn và luôn muốn tự tay tạo dựng cơ đồ.
+            - **Nhược điểm:** Đôi khi quá tự tin dẫn đến độc đoán, cái tôi lớn khiến bạn khó lắng nghe lời khuyên từ người khác.
         """,
-        "career": """
-            Năm 2026 là năm để bạn xây dựng nền móng. Các công việc liên quan đến quản lý, kỹ thuật, tài chính hoặc bất động sản sẽ rất thuận lợi. 
-            **Giai đoạn bùng nổ:** Tháng 6 và Tháng 7. Đây là lúc bạn nên ký kết các hợp đồng dài hạn.
-        """,
-        "love": """
-            Bạn không phải mẫu người lãng mạn kiểu 'ngôn tình', nhưng bạn thể hiện tình yêu qua hành động thực tế. 
-            Năm 2026, mối quan hệ của bạn cần sự cam kết cao hơn. Nếu đang độc thân, bạn có xu hướng tìm kiếm một người có cùng chí hướng xây dựng tương lai bền vững.
-        """,
-        "month_tips": "T7: Đỉnh cao năng lượng, hãy làm việc lớn. T10: Cẩn thận sức khỏe, nên đi du lịch nghỉ dưỡng."
+        "career": "Năm 2026 là lúc bạn bứt phá. Phù hợp khởi nghiệp, làm quản lý hoặc nhận các dự án mới. Đỉnh cao: Tháng 2 và Tháng 8.",
+        "love": "Cần một người đồng hành thấu hiểu khát vọng cá nhân của bạn. Tránh tranh cãi ai là người làm chủ trong nhà.",
+        "month_tips": "T2: Thời điểm vàng để bắt đầu một kế hoạch mới đã ấp ủ lâu nay."
     },
-    7: {
-        "tag": "CHIẾN LƯỢC GIA TRÍ TUỆ",
-        "icon": "🧠",
-        "color": "#8e44ad",
-        "wave": [20, 30, 10, 50, 80, 40, 90, 100, 60, 40, 20, 10],
-        "summary": "Số 7 là con số của tâm linh, triết học và sự thấu suốt sâu sắc.",
+    2: {
+        "icon": "🤝", "tag": "NGƯỜI KẾT NỐI HÒA BÌNH", "color": "#00CECB",
+        "wave": [40, 60, 80, 100, 80, 60, 40, 50, 70, 90, 80, 60],
+        "summary": "Số 2 là con số của sự cân bằng, trực giác và khả năng ngoại giao tài tình.",
         "personality": """
-            - **Ưu điểm:** Khả năng phân tích sắc bén, trực giác cực mạnh. Bạn nhìn thấy những thứ người khác bỏ qua.
-            - **Nhược điểm:** Dễ cô độc, khó gần và hay đa nghi. Bạn thường chìm quá sâu vào suy nghĩ riêng.
+            - **Ưu điểm:** Nhạy cảm, biết lắng nghe và luôn tìm kiếm giải pháp hòa bình. Bạn là chất keo gắn kết mọi tập thể.
+            - **Nhược điểm:** Dễ bị tổn thương bởi nhận xét của người khác, đôi khi quá do dự không dám quyết định.
         """,
-        "career": "Thích hợp với nghiên cứu, giảng dạy hoặc các ngành công nghệ cao. Năm 2026 là năm 'mài rìu', hãy học thêm một kỹ năng mới.",
-        "love": "Cần một người bạn đời biết tôn trọng khoảng không gian riêng của mình.",
-        "month_tips": "T8: Trực giác cao nhất, hãy tin vào cảm giác của mình."
+        "career": "Thành công thông qua hợp tác. Đây không phải năm để hành động đơn độc. Hãy tìm kiếm đối tác chiến lược.",
+        "love": "Sự dịu dàng của bạn là vũ khí mạnh nhất. Hãy chia sẻ cảm xúc nhiều hơn để tránh hiểu lầm.",
+        "month_tips": "T4: Năng lượng kết nối cực mạnh, rất tốt cho việc ký kết hợp đồng."
+    },
+    3: {
+        "icon": "🎭", "tag": "BẬC THẦY TRUYỀN CẢM HỨNG", "color": "#FF5E5B",
+        "wave": [70, 90, 100, 80, 60, 80, 90, 70, 100, 80, 60, 90],
+        "summary": "Số 3 tượng trưng cho sự sáng tạo, niềm vui và sức mạnh của ngôn từ.",
+        "personality": """
+            - **Ưu điểm:** Hài hước, lạc quan, có khả năng diễn đạt xuất sắc. Bạn luôn là tâm điểm của các cuộc vui.
+            - **Nhược điểm:** Dễ bị xao nhãng, 'cả thèm chóng chán' và đôi khi nói quá nhiều mà thiếu hành động thực tế.
+        """,
+        "career": "Vận may đến từ các mối quan hệ xã hội. Nghệ thuật, viết lách, bán hàng sẽ mang lại thu nhập đột phá.",
+        "love": "Bạn thu hút nhiều vệ tinh xung quanh. Hãy chọn người có thể cùng bạn cười và cùng bạn sẻ chia áp lực cuộc sống.",
+        "month_tips": "T3 & T9: Khả năng sáng tạo bùng nổ, hãy thực hiện các ý tưởng 'điên rồ' nhất."
+    },
+    # Bạn hãy tiếp tục thêm các số 5, 6, 8, 9 tương tự vào đây...
+    8: {
+        "icon": "💰", "tag": "NHÀ ĐIỀU HÀNH CHIẾN LƯỢC", "color": "#D4AF37",
+        "wave": [60, 70, 80, 90, 100, 80, 60, 50, 40, 30, 50, 80],
+        "summary": "Số 8 là con số của vật chất, quyền lực và sự cân bằng giữa nhân quả.",
+        "personality": """
+            - **Ưu điểm:** Kiên cường, tham vọng lớn, khả năng quản trị tài chính cực giỏi. Bạn sinh ra để làm những việc lớn.
+            - **Nhược điểm:** Dễ bị cuốn vào công việc mà quên mất gia đình, đôi khi quá thực dụng và khô khan.
+        """,
+        "career": "Năm 2026 là năm thu hoạch. Tiền bạc sẽ đổ về nếu bạn làm việc trung thực và chăm chỉ. Đỉnh cao: Tháng 5.",
+        "love": "Hãy học cách bỏ 'chiếc áo sếp' ở ngoài cửa trước khi về nhà. Gia đình cần sự ấm áp hơn là mệnh lệnh.",
+        "month_tips": "T5: Vận may tài chính lớn, hãy xem xét các khoản đầu tư dài hạn."
     }
 }
 # (Lưu ý: Các số 1, 2, 3, 5, 6, 8, 9 bạn có thể thêm nội dung tương tự vào biến EXTENDED_DATA)
@@ -154,3 +168,4 @@ with c3:
         st.toast("Đã sao chép link thành công!")
 
 st.markdown("<p style='text-align: center; font-size: 0.8em; color: gray;'>© 2026 Hệ Thống Thần Số Học Cá Nhân</p>", unsafe_allow_html=True)
+
