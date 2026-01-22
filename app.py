@@ -29,18 +29,89 @@ def calculate_all(name, dob):
     return b_num, d_num
 
 # --- 3. KHO DỮ LIỆU ĐẦY ĐỦ (1-9) ---
-DATA = {
-    1: {"tag": "NHÀ TIÊN PHONG", "icon": "🥇", "color": "#FFD700", "wave": [80, 95, 70, 90, 60, 50, 85, 100, 75, 90, 80, 95], "advice": "Năm 2026 là lúc bạn bứt phá. Hãy can đảm dẫn đầu các dự án mới!", "p": "Quyết đoán, độc lập và đầy khát vọng. Bạn sinh ra để làm chủ vận mệnh."},
-    2: {"tag": "NGƯỜI KẾT NỐI", "icon": "🤝", "color": "#00CECB", "wave": [40, 60, 80, 100, 85, 65, 45, 55, 75, 95, 85, 65], "advice": "Hợp tác là chìa khóa. Hãy lắng nghe trực giác và xây dựng niềm tin.", "p": "Nhẹ nhàng, thấu cảm và giỏi giao tiếp. Bạn là chất keo gắn kết mọi người."},
-    3: {"tag": "BẬC THẦY TRUYỀN CẢM HỨNG", "icon": "🎭", "color": "#FF5E5B", "wave": [70, 90, 100, 85, 65, 85, 95, 75, 100, 85, 65, 95], "advice": "Hãy chia sẻ ý tưởng của bạn. Nghệ thuật và ngôn từ sẽ mang lại vận may.", "p": "Vui vẻ, sáng tạo và đầy năng lượng. Bạn tỏa sáng nhất khi được thể hiện mình."},
-    4: {"tag": "NGƯỜI XÂY DỰNG", "icon": "🏗️", "color": "#2c3e50", "wave": [50, 65, 75, 85, 95, 100, 85, 75, 65, 55, 65, 75], "advice": "Kỷ luật và thực tế. Đây là năm củng cố nền tảng tài chính bền vững.", "p": "Vững chãi, chi tiết và cực kỳ đáng tin cậy. Bạn là trụ cột của gia đình."},
-    5: {"tag": "NHÀ THÁM HIỂM", "icon": "✈️", "color": "#FFAD05", "wave": [85, 75, 100, 85, 95, 100, 75, 65, 95, 85, 100, 95], "advice": "Sẵn sàng cho những thay đổi bất ngờ. Vận may nằm ở sự tự do.", "p": "Linh hoạt, ham học hỏi và ghét sự gò bó. Bạn luôn tìm thấy cơ hội trong biến động."},
-    6: {"tag": "NGƯỜI NUÔI DƯỠNG", "icon": "🏡", "color": "#7FB069", "wave": [35, 55, 75, 95, 100, 85, 65, 55, 85, 95, 100, 55], "advice": "Gia đình là ưu tiên số 1. Hãy chăm sóc bản thân và những người thân yêu.", "p": "Ấm áp, trách nhiệm và giàu tình thương. Bạn mang lại sự bình yên cho mọi người."},
-    7: {"tag": "BẬC THẦY TRÍ TUỆ", "icon": "🧠", "color": "#6C5CE7", "wave": [25, 45, 35, 65, 85, 55, 95, 100, 75, 45, 35, 25], "advice": "Dành thời gian học tập và thiền định. Trí tuệ của bạn sẽ tăng trưởng mạnh.", "p": "Sâu sắc, nội tâm và có trực giác cực mạnh. Bạn nhìn thấu mọi sự việc."},
-    8: {"tag": "NHÀ ĐIỀU HÀNH", "icon": "💰", "color": "#D4AF37", "wave": [65, 85, 95, 100, 85, 75, 65, 55, 45, 65, 85, 100], "advice": "Năm của gặt hái tài chính. Hãy giữ sự công bằng trong mọi quyết định.", "p": "Mạnh mẽ, tham vọng và giỏi quản trị. Bạn có tố chất của một nhà lãnh đạo tài ba."},
-    9: {"tag": "NGƯỜI NHÂN ÁI", "icon": "❤️", "color": "#EF476F", "wave": [15, 35, 55, 75, 95, 100, 85, 65, 45, 25, 55, 100], "advice": "Cho đi là nhận lại nhiều hơn. Hãy hướng tới các hoạt động cộng đồng.", "p": "Bao dung, lý tưởng và sống vì người khác. Bạn là người truyền lửa nhân văn."}
+EXTENDED_DATA = {
+    1: {
+        "tag": "NHÀ TIÊN PHONG ĐỘC LẬP", "icon": "🥇", "color": "#FFD700",
+        "wave": [80, 100, 70, 90, 60, 50, 80, 100, 70, 90, 85, 95],
+        "summary": "Số 1 đại diện cho sự khởi đầu, lòng can đảm và ý chí dẫn đầu tuyệt vời.",
+        "personality": "- **Ưu điểm:** Khả năng lãnh đạo bẩm sinh, quyết đoán.\n- **Nhược điểm:** Cái tôi cao, đôi khi độc đoán.",
+        "career": "Năm 2026 là lúc bứt phá mạnh mẽ. Phù hợp làm quản lý, khởi nghiệp. Đỉnh cao: Tháng 2 & 8.",
+        "love": "Cần người thấu hiểu khát vọng cá nhân. Tránh tranh giành quyền kiểm soát.",
+        "month_tips": "T2: Thời điểm vàng cho các dự án mới."
+    },
+    2: {
+        "tag": "NGƯỜI KẾT NỐI HÒA BÌNH", "icon": "🤝", "color": "#00CECB",
+        "wave": [40, 60, 80, 100, 80, 60, 40, 50, 70, 90, 80, 60],
+        "summary": "Số 2 là con số của sự cân bằng, trực giác và khả năng ngoại giao.",
+        "personality": "- **Ưu điểm:** Nhạy cảm, biết lắng nghe.\n- **Nhược điểm:** Dễ tổn thương, hay do dự.",
+        "career": "Thành công thông qua hợp tác. Hãy tìm kiếm đối tác chiến lược thay vì làm một mình.",
+        "love": "Sự dịu dàng là vũ khí. Hãy chia sẻ cảm xúc nhiều hơn để gắn kết.",
+        "month_tips": "T4: Năng lượng kết nối cực mạnh, tốt cho đàm phán."
+    },
+    3: {
+        "tag": "BẬC THẦY TRUYỀN CẢM HỨNG", "icon": "🎭", "color": "#FF5E5B",
+        "wave": [70, 90, 100, 80, 60, 80, 90, 70, 100, 80, 60, 90],
+        "summary": "Số 3 tượng trưng cho sự sáng tạo, niềm vui và sức mạnh ngôn từ.",
+        "personality": "- **Ưu điểm:** Lạc quan, giao tiếp xuất sắc.\n- **Nhược điểm:** Dễ xao nhãng, thiếu kiên trì.",
+        "career": "Vận may đến từ các mối quan hệ. Nghệ thuật, viết lách sẽ mang lại thu nhập đột phá.",
+        "love": "Bạn là thỏi nam châm thu hút. Hãy chọn người có thể cùng bạn chia sẻ niềm vui.",
+        "month_tips": "T3 & T9: Khả năng sáng tạo bùng nổ đỉnh điểm."
+    },
+    4: {
+        "tag": "NHÀ KIẾN THIẾT KIÊN ĐỊNH", "icon": "🏗️", "color": "#2c3e50",
+        "wave": [50, 60, 70, 85, 95, 100, 80, 70, 60, 55, 65, 75],
+        "summary": "Số 4 đại diện cho sự vững chãi, kỷ luật và thực tế.",
+        "personality": "- **Ưu điểm:** Thực tế, tỉ mỉ, đáng tin cậy.\n- **Nhược điểm:** Cứng nhắc, đôi khi quá bảo thủ.",
+        "career": "Năm củng cố nền móng. Các ngành kỹ thuật, tài chính, quản lý sẽ rất thuận lợi.",
+        "love": "Cần sự ổn định và cam kết lâu dài. Hãy thể hiện tình yêu bằng hành động.",
+        "month_tips": "T6: Tập trung vào các mục tiêu tài chính dài hạn."
+    },
+    5: {
+        "tag": "NHÀ THÁM HIỂM TỰ DO", "icon": "✈️", "color": "#FFAD05",
+        "wave": [90, 70, 100, 80, 90, 100, 75, 60, 90, 80, 100, 90],
+        "summary": "Số 5 là con số của sự thay đổi, thích nghi và trải nghiệm.",
+        "personality": "- **Ưu điểm:** Linh hoạt, giàu năng lượng.\n- **Nhược điểm:** Ham vui, khó tập trung mục tiêu.",
+        "career": "Vận hành tốt trong môi trường biến động. Thích hợp làm du lịch, Marketing, sự kiện.",
+        "love": "Cần sự mới mẻ và không gian riêng. Tránh sự gò bó quá mức.",
+        "month_tips": "T5 & T11: Những chuyến đi mang lại cơ hội bất ngờ."
+    },
+    6: {
+        "tag": "NGƯỜI NUÔI DƯỠNG ẤM ÁP", "icon": "🏡", "color": "#7FB069",
+        "wave": [30, 50, 70, 90, 100, 80, 60, 50, 80, 95, 100, 50],
+        "summary": "Số 6 tượng trưng cho trách nhiệm, gia đình và tình yêu thương.",
+        "personality": "- **Ưu điểm:** Giàu lòng trắc ẩn, trách nhiệm cao.\n- **Nhược điểm:** Hay ôm đồm, lo lắng thái quá.",
+        "career": "Thành công trong các ngành giáo dục, y tế, chăm sóc khách hàng.",
+        "love": "Gia đình là ưu tiên số 1. Năm tuyệt vời để hàn gắn và xây tổ ấm.",
+        "month_tips": "T10: Dành trọn thời gian cho người thân yêu."
+    },
+    7: {
+        "tag": "CHIẾN LƯỢC GIA TRÍ TUỆ", "icon": "🧠", "color": "#6C5CE7",
+        "wave": [20, 40, 30, 60, 80, 50, 90, 100, 70, 40, 30, 20],
+        "summary": "Số 7 là con số của tri thức, chiều sâu và sự thấu suốt tâm linh.",
+        "personality": "- **Ưu điểm:** Khả năng phân tích sắc bén, trực giác mạnh.\n- **Nhược điểm:** Khép kín, đôi khi hay xa cách.",
+        "career": "Năm của học tập và nghiên cứu. Trí tuệ tăng trưởng vượt bậc trong năm 2026.",
+        "love": "Cần sự đồng điệu về tư duy và tâm hồn hơn là vật chất.",
+        "month_tips": "T8: Đỉnh cao trí tuệ, hãy tin vào trực giác."
+    },
+    8: {
+        "tag": "NHÀ ĐIỀU HÀNH CHIẾN LƯỢC", "icon": "💰", "color": "#D4AF37",
+        "wave": [60, 70, 80, 90, 100, 80, 60, 50, 40, 30, 50, 80],
+        "summary": "Số 8 là con số của vật chất, quyền lực và sự cân bằng.",
+        "personality": "- **Ưu điểm:** Tham vọng, quản trị tài chính giỏi.\n- **Nhược điểm:** Thực dụng, dễ khô khan.",
+        "career": "Năm thu hoạch lớn về tài chính. Tiền bạc sẽ đổ về nếu làm việc công bằng.",
+        "love": "Hãy bỏ 'áo sếp' khi về nhà. Gia đình cần sự ấm áp hơn mệnh lệnh.",
+        "month_tips": "T5: Vận tài lộc cực phát, hãy nắm bắt ngay."
+    },
+    9: {
+        "tag": "NGƯỜI NHÂN ÁI BAO DUNG", "icon": "❤️", "color": "#EF476F",
+        "wave": [10, 30, 50, 70, 90, 100, 80, 60, 40, 20, 50, 100],
+        "summary": "Số 9 đại diện cho sự hoàn tất, lý tưởng và lòng nhân ái.",
+        "personality": "- **Ưu điểm:** Bao dung, lý tưởng sống cao đẹp.\n- **Nhược điểm:** Dễ mơ mộng, đôi khi thiếu thực tế.",
+        "career": "Phù hợp các hoạt động cộng đồng, nhân đạo hoặc giáo dục tầm vóc lớn.",
+        "love": "Tình yêu mang tính hy sinh và cống hiến. Hãy khép lại những tổn thương cũ.",
+        "month_tips": "T12: Kết thúc một chu kỳ cũ để đón nhận vận may mới."
+    }
 }
-
 # --- 4. GIAO DIỆN CHÍNH ---
 st.title("🔮 BẢN ĐỒ VẬN MỆNH CHI TIẾT 2026")
 st.markdown("---")
@@ -94,3 +165,4 @@ if submit and name:
     st.balloons()
 else:
     st.info("👈 Hãy nhập thông tin bên trái để khám phá vận mệnh!")
+
