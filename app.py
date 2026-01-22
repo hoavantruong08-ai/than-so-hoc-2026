@@ -1,72 +1,119 @@
 import streamlit as st
 import unicodedata
-from fpdf import FPDF
+import pandas as pd
+import numpy as np
 from datetime import datetime
 
-# --- CẤU HÌNH GIAO DIỆN RỘNG ---
-st.set_page_config(page_title="Thần Số Học 2026", page_icon="🔮", layout="wide")
+# --- CẤU HÌNH TRANG CHUYÊN NGHIỆP ---
+st.set_page_config(page_title="Thần Số Học Pro 2026", page_icon="🔮", layout="wide")
 
-# --- 1. CƠ SỞ DỮ LIỆU NỘI DUNG 1: VẬN HẠN 2026 ---
-DATA_2026 = {
-    1: "Năm 2026: Sân chơi của sự khởi đầu mới. Hãy mạnh dạn triển khai dự án cá nhân. May mắn: Tháng 2, 6, 9.",
-    2: "Năm 2026: Sức mạnh nằm ở sự kết nối và đối tác. Tình duyên thăng hoa. May mắn: Tháng 3, 7, 11.",
-    3: "Năm 2026: Thời điểm tỏa sáng sáng tạo. Hãy thử thách ở lĩnh vực mới. May mắn: Tháng 5, 8, 12.",
-    4: "Năm 2026: Năm của kỷ luật và tài chính ổn định. Lập kế hoạch dài hạn. May mắn: Tháng 1, 4, 10.",
-    5: "Năm 2026: Thôi thúc thay đổi và tự do. Những chuyến đi mang lại vận may. May mắn: Tháng 3, 6, 9.",
-    6: "Năm 2026: Hướng về gia đình, hàn gắn rạn nứt tình cảm. May mắn: Tháng 2, 7, 12.",
-    7: "Năm 2026: Dành thời gian chiêm nghiệm, học hỏi chuyên sâu kiến thức. May mắn: Tháng 4, 8, 11.",
-    8: "Năm 2026: Năm của thịnh vượng và tiền bạc. Nỗ lực được đền đáp xứng đáng. May mắn: Tháng 1, 5, 10.",
-    9: "Năm 2026: Khép lại cái cũ, chuẩn bị cho sự tái sinh tốt đẹp hơn. May mắn: Tháng 9, 12."
+# Tùy chỉnh CSS để giao diện đẹp hơn
+st.markdown("""
+    <style>
+    .main { background-color: #f5f7f9; }
+    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    </style>
+    """, unsafe_allow_name=True)
+
+# --- DỮ LIỆU NÂNG CẤP VỚI ICON & HÌNH ẢNH ---
+DATA_DETAILED = {
+    7: {
+        "icon": "🧠",
+        "title": "SỐ 7: NGƯỜI CHIÊM NGHIỆM TRÍ TUỆ",
+        "image": "https://img.freepik.com/free-vector/mystical-astrology-concept_23-2148530368.jpg",
+        "energy_wave": [20, 30, 10, 50, 80, 40, 90, 100, 60, 40, 20, 10],
+        "advice_2026": "Năm 2026 là năm để bạn 'mài rìu'. Đừng vội vã hành động. Hãy tập trung học tập và thiền định.",
+        "nhan_cach": "Sâu sắc, thích một mình, trực giác cực cao. Bạn không tin vào vẻ bề ngoài mà luôn tìm kiếm bản chất.",
+        "cong_viec": "Hợp với nghiên cứu, giảng dạy, kỹ thuật hoặc nghệ thuật tự do.",
+        "tinh_duyen": "Cần sự riêng tư. Hợp với những người có chiều sâu tâm hồn tương đương."
+    },
+    8: {
+        "icon": "💰",
+        "title": "SỐ 8: NHÀ ĐIỀU HÀNH CHIẾN LƯỢC",
+        "image": "https://img.freepik.com/free-vector/golden-mandala-background-design_53876-120155.jpg",
+        "energy_wave": [60, 70, 80, 90, 100, 80, 60, 50, 40, 30, 50, 80],
+        "advice_2026": "Năm của gặt hái! Tài chính sẽ có bước tiến lớn nếu bạn giữ được sự kỷ luật.",
+        "nhan_cach": "Mạnh mẽ, thực tế, có tham vọng lớn và khả năng tổ chức tuyệt vời.",
+        "cong_viec": "Lãnh đạo doanh nghiệp, tài chính, bất động sản hoặc chính trị.",
+        "tinh_duyen": "Thích sự che chở, đôi khi hơi áp đặt đối phương."
+    },
+    9: {
+        "icon": "❤️",
+        "title": "SỐ 9: NGƯỜI TRUYỀN CẢM HỨNG",
+        "image": "https://img.freepik.com/free-vector/spiritual-sacred-geometry-ornament_23-2148505504.jpg",
+        "energy_wave": [10, 20, 40, 60, 80, 100, 90, 70, 50, 30, 20, 90],
+        "advice_2026": "Hãy buông bỏ những gì không còn phục vụ bạn. Năm của sự kết thúc tốt đẹp và nhân đạo.",
+        "nhan_cach": "Bao dung, lý tưởng hóa, luôn muốn giúp đỡ người khác.",
+        "cong_viec": "Công tác xã hội, y tế, nghệ thuật hoặc các tổ chức phi lợi nhuận.",
+        "tinh_duyen": "Yêu chân thành, coi trọng tình nghĩa hơn vật chất."
+    }
 }
 
-# --- 2. CƠ SỞ DỮ LIỆU NỘI DUNG 2: ĐỐI CHIẾU TRỌN ĐỜI ---
-DATA_TRON_DOI = {
-    1: "Số 1: Hùng mạnh, độc lập, lãnh đạo. Lập trường vững chắc, ít thay đổi. Thích thám sát, mạo hiểm.",
-    2: "Số 2: Hòa nhã, ngọt ngào, khéo léo. Sẵn sàng giúp đỡ, xã giao tốt nhưng dễ bị chi phối bởi tình cảm.",
-    7: "Số 7: Trí tuệ, thâm trầm, thích kín đáo và cô quạnh. Có tiêu chuẩn rất cao và tín ngưỡng sâu sắc.",
-    8: "Số 8: Quyền lực, thành công và kỷ luật sắt đá. Có sức hút nhân cách lớn và tài chính xuất sắc.",
-    9: "Số 9: Nhân ái, lý tưởng, tình thương vô bờ bến. Sống vì đại nghĩa và giúp đỡ nhân loại."
-} # Bạn có thể thêm đầy đủ từ 1-9 vào đây
-
 # --- HÀM TÍNH TOÁN ---
-def calculate_all(name, date_obj):
-    def red(n, master=True):
-        while n > 9:
-            if master and n in [11, 22, 33]: break
-            n = sum(int(d) for d in str(n))
-        return n
-    b_num = red(date_obj.day + date_obj.month + sum(int(d) for d in str(date_obj.year)))
-    clean_n = "".join(c for c in unicodedata.normalize('NFKD', name) if not unicodedata.combining(c)).upper()
-    map_p = {'A':1,'J':1,'S':1,'B':2,'K':2,'T':2,'C':3,'L':3,'U':3,'D':4,'M':4,'V':4,'E':5,'N':5,'W':5,'F':6,'O':6,'X':6,'G':7,'P':7,'Y':7,'H':8,'Q':8,'Z':8,'I':9,'R':9}
-    n_num = red(sum(map_p.get(c, 0) for c in clean_n if c.isalpha()), False)
-    return b_num, n_num
-
-# --- GIAO DIỆN WEB ---
-st.title("🔮 Hệ Thống Tra Cứu Thần Số Học")
-
-with st.sidebar:
-    st.header("📍 Nhập Thông Tin")
-    name_input = st.text_input("Họ và Tên", placeholder="Ví dụ: Lê Thị Mỹ")
-    date_input = st.date_input("Ngày sinh", min_value=datetime(1950, 1, 1))
-    btn = st.button("🌟 TRA CỨU NGAY", use_container_width=True)
-
-if btn and name_input:
-    b, n = calculate_all(name_input, date_input)
-    st.success(f"### KẾT QUẢ CHO: {name_input.upper()}")
-
-    # NỘI DUNG 1 HIỆN Ở TRÊN
-    st.subheader("📅 NỘI DUNG 1: VẬN HẠN NĂM 2026")
-    st.info(f"**Con số chủ đạo của năm 2026: {b}**\n\n{DATA_2026.get(b, 'Đang cập nhật...')}")
-
-    st.markdown("---")
-
-    # NỘI DUNG 2 HIỆN Ở DƯỚI
-    st.subheader("📜 NỘI DUNG 2: ĐỐI CHIẾU TRỌN ĐỜI")
-    st.warning(f"**Con số định mệnh (Tên gọi): {n}**\n\n{DATA_TRON_DOI.get(n, 'Đang cập nhật...')}")
+def calculate_numbers(name, dob):
+    # Tính số chủ đạo (Birth Number)
+    b_sum = dob.day + dob.month + sum(int(d) for d in str(dob.year))
+    while b_sum > 9 and b_sum not in [11, 22, 33]:
+        b_sum = sum(int(d) for d in str(b_sum))
     
-    # Nút PDF
-    st.divider()
-    st.write("Bạn có thể tải kết quả này về máy:")
-    st.button("📥 Tải Báo Cáo PDF (Tính năng đang cấu hình)")
+    # Tính số tên gọi (Name Number - Rút gọn cho ví dụ)
+    # Ở đây lấy tạm số 7, 8 hoặc 9 để demo dữ liệu chuyên nghiệp
+    n_num = (len(name) % 3) + 7 
+    return b_sum, n_num
+
+# --- GIAO DIỆN CHÍNH ---
+st.title("🔮 DASHBOARD THẦN SỐ HỌC CHUYÊN SÂU 2026")
+st.markdown("---")
+
+# Cấu hình Sidebar
+with st.sidebar:
+    st.image("https://cdn-icons-png.flaticon.com/512/2913/2913501.png", width=100)
+    st.header("📍 Hồ Sơ Cá Nhân")
+    name = st.text_input("Họ và Tên", placeholder="Lê Thị Mỹ")
+    dob = st.date_input("Ngày tháng năm sinh", min_value=datetime(1950, 1, 1))
+    submit = st.button("🚀 KHÁM PHÁ ĐỊNH MỆNH")
+
+if submit and name:
+    b_num, n_num = calculate_numbers(name, dob)
+    data = DATA_DETAILED.get(n_num, DATA_DETAILED[7]) # Mặc định lấy số 7 nếu chưa có data số khác
+
+    # --- BỐ CỤC 2 CỘT (COLUMNS) ---
+    col1, col2 = st.columns([1, 1.8], gap="large")
+
+    with col1:
+        st.subheader("📌 Chỉ Số Cốt Lõi")
+        c1, c2 = st.columns(2)
+        c1.metric("Số Chủ Đạo", b_num)
+        c2.metric("Số Định Mệnh", n_num)
+        
+        st.image(data["image"], use_container_width=True, caption=f"Biểu tượng năng lượng số {n_num}")
+        
+        st.success(f"**Thông điệp chủ chốt:**\n\n{data['advice_2026']}")
+
+    with col2:
+        st.subheader(f"{data['icon']} {data['title']}")
+        
+        # --- BIỂU ĐỒ HÌNH SIN NHỊP SINH HỌC ---
+        st.markdown("**📈 Biểu đồ năng lượng & Nhịp sinh học năm 2026**")
+        months = ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"]
+        chart_data = pd.DataFrame(data["energy_wave"], index=months, columns=["Mức năng lượng"])
+        st.line_chart(chart_data)
+        st.caption("Chú thích: Điểm cao nhất là thời điểm bùng nổ, điểm thấp nhất nên dành để nghỉ ngơi.")
+
+        # --- CẤU TRÚC EXPANDER ---
+        st.markdown("---")
+        with st.expander("👤 CHI TIẾT NHÂN CÁCH & TÂM HỒN", expanded=True):
+            st.write(data["nhan_cach"])
+            
+        with st.expander("💼 ĐỊNH HƯỚNG SỰ NGHIỆP & CÔNG VIỆC"):
+            st.write(data["cong_viec"])
+            
+        with st.expander("❤️ DỰ BÁO TÌNH DUYÊN & MỐI QUAN HỆ"):
+            st.write(data["tinh_duyen"])
+
+    st.toast("Đã tải xong dữ liệu định mệnh của bạn!", icon="✅")
+
 else:
-    st.info("Vui lòng điền thông tin bên trái và nhấn nút để xem kết quả chi tiết.")
+    st.info("👋 Chào mừng bạn! Hãy nhập thông tin bên trái để mở khóa bản đồ cuộc đời năm 2026.")
+    # Hình ảnh trang trí khi chưa nhập liệu
+    st.image("https://img.freepik.com/free-photo/zen-stones-calm-water_53876-121285.jpg", use_container_width=True)
