@@ -48,7 +48,18 @@ st.markdown("---")
 with st.sidebar:
     st.header("🔑 Thông Tin Tra Cứu")
     name = st.text_input("Nhập Họ và Tên", "Văn Tiến Khoa")
-    dob = st.date_input("Chọn Ngày Sinh", datetime(1972, 9, 30))
+    
+    # Sửa lỗi hạn chế lịch tại đây:
+    # min_value: cho phép chọn từ năm 1950
+    # max_value: giới hạn đến năm hiện tại (2026)
+    dob = st.date_input(
+        "Chọn Ngày Sinh",
+        value=datetime(1990, 1, 1),
+        min_value=datetime(1950, 1, 1),
+        max_value=datetime(2026, 12, 31),
+        format="DD/MM/YYYY" # Giúp sắp xếp ngày/tháng/năm theo kiểu Việt Nam
+    )
+    
     submit = st.button("🚀 XEM KẾT QUẢ NGAY")
 
 if submit and name:
@@ -86,4 +97,5 @@ if submit and name:
     st.balloons()
 else:
     st.info("👈 Hãy nhập tên và ngày sinh để bắt đầu!")
+
 
