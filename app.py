@@ -121,7 +121,7 @@ st.title("🔮 BẢN ĐỒ VẬN MỆNH CHI TIẾT 2026")
 
 with st.sidebar:
     st.header("🔑 Thông Tin Tra Cứu")
-    input_name = st.text_input("Nhập Họ và Tên", value="Nguyễn Xuân Quần")
+    input_name = st.text_input("Nhập Họ và Tên", value="Lưu Xuân Quảng")
     
     # SỬA ĐỊNH DẠNG NGÀY THÁNG TẠI ĐÂY
     input_dob = st.date_input(
@@ -175,3 +175,4 @@ with c2:
 
 if submitted:
     st.balloons()
+
