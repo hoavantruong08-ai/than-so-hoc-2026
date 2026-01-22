@@ -47,7 +47,7 @@ st.markdown("---")
 
 with st.sidebar:
     st.header("🔑 Thông Tin Tra Cứu")
-    name = st.text_input("Nhập Họ và Tên", "Hoa Xuân Trường")
+    name = st.text_input("Nhập Họ và Tên", "Văn Tiến Khoa")
     dob = st.date_input("Chọn Ngày Sinh", datetime(1972, 9, 30))
     submit = st.button("🚀 XEM KẾT QUẢ NGAY")
 
@@ -86,3 +86,4 @@ if submit and name:
     st.balloons()
 else:
     st.info("👈 Hãy nhập tên và ngày sinh để bắt đầu!")
+
