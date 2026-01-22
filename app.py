@@ -113,3 +113,44 @@ if submit and name:
 
     st.success("Bản báo cáo của bạn đã sẵn sàng! Chúc bạn một năm 2026 rực rỡ.")
     st.balloons()
+
+# --- PHẦN CHIA SẺ MẠNG XÃ HỘI ---
+st.markdown("---")
+st.markdown("<h3 style='text-align: center;'>📢 CHIA SẺ KẾT QUẢ CHO BẠN BÈ</h3>", unsafe_allow_html=True)
+
+# URL của trang web bạn (Thay đổi nếu bạn đổi tên app)
+share_url = "https://xem-than-so-hoc-2026.streamlit.app"
+share_msg = f"Tôi vừa tra cứu Thần Số Học 2026 cực chuẩn! Xem ngay tại: {share_url}"
+
+# Tạo 3 cột để đặt các nút chia sẻ
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    # Nút Facebook
+    fb_link = f"https://www.facebook.com/sharer/sharer.php?u={share_url}"
+    st.markdown(f'''
+        <a href="{fb_link}" target="_blank">
+            <button style="width:100%; background-color: #1877F2; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                📘 Chia sẻ Facebook
+            </button>
+        </a>
+    ''', unsafe_allow_html=True)
+
+with c2:
+    # Nút Zalo (Dùng link chuyển hướng của Zalo)
+    zalo_link = f"https://zalo.me/s/share/?url={share_url}&note={share_msg}"
+    st.markdown(f'''
+        <a href="{zalo_link}" target="_blank">
+            <button style="width:100%; background-color: #0068FF; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                💬 Chia sẻ qua Zalo
+            </button>
+        </a>
+    ''', unsafe_allow_html=True)
+
+with c3:
+    # Nút Copy Link
+    if st.button("🔗 Sao chép đường dẫn"):
+        st.write(f"Đã copy: `{share_url}`")
+        st.toast("Đã sao chép link thành công!")
+
+st.markdown("<p style='text-align: center; font-size: 0.8em; color: gray;'>© 2026 Hệ Thống Thần Số Học Cá Nhân</p>", unsafe_allow_html=True)
