@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# --- Cấu hình trang ---
+# --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="Thần Số Học 2026", page_icon="🔮")
 
 def get_root_number(n):
@@ -11,15 +11,15 @@ def get_root_number(n):
         n = sum(int(d) for d in str(n))
     return n
 
-# --- Giao diện Sidebar ---
+# --- 2. GIAO DIỆN ---
 with st.sidebar:
-    st.header("🔑 Tra cứu")
+    st.header("🔑 Thông tin tra cứu")
     name = st.text_input("Họ và Tên", "Nguyễn Văn A")
     dob = st.date_input("Ngày sinh", datetime(1990, 1, 1))
     phone = st.text_input("Số điện thoại", "")
     submitted = st.button("🚀 KHÁM PHÁ")
 
-# --- Xử lý dữ liệu ---
+# --- 3. XỬ LÝ DỮ LIỆU ---
 if submitted:
     b_num = get_root_number(dob.day + dob.month + sum(int(d) for d in str(dob.year)))
     
@@ -43,7 +43,7 @@ if submitted:
         st.success("✅ Đã lưu vào Google Sheets thành công!")
         
     except Exception as e:
-        st.error(f"⚠️ Lỗi kết nối: {e}")
+        st.error(f"⚠️ App chưa có quyền Editor: {e}")
 
     # Hiển thị kết quả
     st.divider()
