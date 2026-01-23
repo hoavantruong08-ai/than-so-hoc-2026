@@ -27,13 +27,10 @@ if submitted:
     
     # KẾT NỐI VÀ LƯU GOOGLE SHEETS
     try:
-        # Khởi tạo kết nối
         conn = st.connection("gsheets", type=GSheetsConnection)
-        
-        # Đọc dữ liệu hiện tại
         df_old = conn.read(ttl=0)
         
-        # Tạo dòng mới (Lưu ý: "Số" dùng dấu sắc khớp với Sheet)
+        # Tạo dòng mới (Cột E dùng dấu sắc: "Số Điện Thoại")
         new_row = pd.DataFrame([{
             "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "Họ Tên": name,
@@ -45,12 +42,12 @@ if submitted:
         # Gộp dữ liệu và cập nhật lên Sheet
         df_updated = pd.concat([df_old, new_row], ignore_index=True)
         conn.update(data=df_updated)
-        st.success("✅ Đã lưu thông tin thành công!")
+        st.success("✅ Đã ghi nhận thông tin thành công!")
         
     except Exception as e:
         st.error(f"⚠️ Lỗi kết nối Sheet: {e}")
 
-    # Hiển thị kết quả ra màn hình
+    # Hiển thị kết quả
     st.divider()
     st.header(f"Kết quả: {name.upper()}")
     st.metric("SỐ CHỦ ĐẠO CỦA BẠN", b_num)
