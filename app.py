@@ -2,103 +2,104 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
+import unicodedata
+import urllib.parse
 
-# --- CẤU HÌNH TRANG ---
-st.set_page_config(page_title="Thần Số Học Pro 2026", page_icon="🔮", layout="wide")
+# --- 1. CẤU HÌNH & GIAO DIỆN ---
+st.set_page_config(page_title="Thần Số Học Pythagoras 2026", page_icon="🔮", layout="wide")
 
-# --- PHONG CÁCH GIAO DIỆN (CSS) ---
 st.markdown("""
     <style>
-    .main { background-color: #f8f9fa; }
-    .stMetric { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .report-card { background: white; padding: 25px; border-radius: 20px; border-top: 5px solid #6c5ce7; margin-bottom: 20px; }
-    h1 { color: #2d3436; text-align: center; }
+    .report-card { background: white; padding: 20px; border-radius: 15px; border-left: 8px solid #6c5ce7; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .metric-box { text-align: center; padding: 10px; background: #f8f9fa; border-radius: 10px; }
+    .share-btn-fb { background-color: #1877F2; color: white !important; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; text-decoration: none; display: block; }
+    .share-btn-zalo { background-color: #0068FF; color: white !important; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; text-decoration: none; display: block; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- DỮ LIỆU CHUYÊN SÂU ---
-DATA = {
-    1: {"tag": "NHÀ LÃNH ĐẠO ĐỘC LẬP", "desc": "Bạn sinh ra để dẫn dắt. Cá tính mạnh mẽ, kiên định và có khả năng tự lập cao.", "advice": "Năm 2026 là năm để bạn bắt đầu những dự án cá nhân mới."},
-    2: {"tag": "SỨ GIẢ HÒA BÌNH", "desc": "Sức mạnh của bạn nằm ở sự lắng nghe, thấu hiểu và kết nối mọi người.", "advice": "Hãy tin vào trực giác của mình hơn trong năm nay."},
-    3: {"tag": "NGƯỜI TRUYỀN CẢM HỨNG", "desc": "Sáng tạo, vui vẻ và đầy năng lượng. Bạn là linh hồn của mọi cuộc vui.", "advice": "Tập trung vào các kỹ năng giao tiếp và nghệ thuật."},
-    4: {"tag": "NGƯỜI XÂY DỰNG TẬN TỤY", "desc": "Kỷ luật, thực tế và cực kỳ đáng tin cậy. Bạn là nền móng của mọi tổ chức.", "advice": "Cần chú ý hơn đến sức khỏe và sự cân bằng cuộc sống."},
-    5: {"tag": "NHÀ THÁM HIỂM TỰ DO", "desc": "Thích thay đổi, ưa mạo hiểm và không ngại thử thách mới.", "advice": "Năm 2026 mang đến nhiều cơ hội đi xa và mở rộng tầm nhìn."},
-    6: {"icon": "❤️", "tag": "NGƯỜI NUÔI DƯỠNG", "desc": "Trách nhiệm, yêu thương và luôn hướng về gia đình.", "advice": "Dành thời gian chăm sóc tổ ấm và các mối quan hệ cốt lõi."},
-    7: {"tag": "CHIẾN LƯỢC GIA TÂM LINH", "desc": "Thích chiêm nghiệm, nghiên cứu sâu và có thế giới nội tâm phong phú.", "advice": "Đây là năm học hỏi và nâng cao kiến thức chuyên môn."},
-    8: {"tag": "NHÀ ĐIỀU HÀNH TÀI BA", "desc": "Quyền lực, tài chính và sự điều hành là thế mạnh của bạn.", "advice": "Cơ hội thăng tiến và gia tăng tài sản đang chờ đợi bạn."},
-    9: {"tag": "NGƯỜI NHÂN ÁI LÝ TƯỞNG", "desc": "Sống vì cộng đồng, bao dung và đầy lòng nhân ái.", "advice": "Hãy học cách buông bỏ những điều cũ để đón nhận cái mới."},
-    11: {"tag": "BẬC THẦY TRỰC GIÁC", "desc": "Năng lượng tâm linh cực cao, có khả năng nhìn thấu sự việc.", "advice": "Hãy chia sẻ tầm nhìn của bạn để giúp đỡ người khác."},
-    22: {"tag": "BẬC THẦY KIẾN TẠO", "desc": "Biến những giấc mơ viển vông nhất thành hiện thực hữu hình.", "advice": "Đừng ngại những kế hoạch lớn, bạn có đủ lực để làm."}
+# --- 2. DỮ LIỆU THUYẾT MINH CHUYÊN SÂU ---
+INTERPRETATION = {
+    1: {"tag": "NHÀ LÃNH ĐẠO ĐỘC LẬP", "desc": "Bạn mang năng lượng của người tiên phong, quyết đoán và có khao khát khẳng định bản thân mãnh liệt.", "advice": "Hãy tự tin dẫn dắt nhưng đừng quên lắng nghe cộng sự."},
+    2: {"tag": "SỨ GIẢ HÒA BÌNH", "desc": "Bạn có khả năng kết nối tâm hồn, nhạy cảm và luôn tìm kiếm sự cân bằng trong các mối quan hệ.", "advice": "Trực giác là vũ khí mạnh nhất của bạn trong năm 2026."},
+    3: {"tag": "NGƯỜI TRUYỀN CẢM HỨNG", "desc": "Sáng tạo và ngôn từ là thế mạnh. Bạn lan tỏa niềm vui và sự lạc quan đến mọi người xung quanh.", "advice": "Hãy tập trung năng lượng vào một mục tiêu cụ thể để bứt phá."},
+    4: {"tag": "NGƯỜI XÂY DỰNG KỶ LUẬT", "desc": "Bạn là hiện thân của sự vững chãi, thực tế và làm việc có quy trình rõ ràng.", "advice": "Cần học cách linh hoạt hơn trước những thay đổi của thời đại."},
+    5: {"tag": "NHÀ CẢI CÁCH TỰ DO", "desc": "Yêu thích sự đổi mới, không ngại mạo hiểm và luôn khao khát khám phá những chân trời mới.", "advice": "Hãy tận hưởng sự thay đổi nhưng đừng đánh mất mục tiêu cốt lõi."},
+    6: {"tag": "NGƯỜI NUÔI DƯỠNG TẬN TÂM", "desc": "Mang trái tim ấm áp, bạn luôn sẵn lòng che chở và chăm sóc cho gia đình, cộng đồng.", "advice": "Đừng quên chăm sóc bản thân mình trước khi lo cho người khác."},
+    7: {"tag": "NGƯỜI TÌM KIẾM TRI THỨC", "desc": "Bạn thích chiêm nghiệm, phân tích sâu và có khả năng tự học hỏi rất cao thông qua trải nghiệm.", "advice": "Năm nay là thời điểm vàng để bạn tu tập hoặc nghiên cứu chuyên sâu."},
+    8: {"tag": "NHÀ ĐIỀU HÀNH THÀNH CÔNG", "desc": "Bạn có năng lực quản trị, tư duy tài chính sắc bén và khả năng chịu áp lực lớn.", "advice": "Sự kiên trì sẽ mang lại phần thưởng vật chất xứng đáng trong năm nay."},
+    9: {"tag": "NGƯỜI NHÂN ÁI LÝ TƯỞNG", "desc": "Sống vì hoài bão lớn lao, giàu lòng trắc ẩn và luôn hướng tới những giá trị tốt đẹp cho nhân loại.", "advice": "Hãy học cách khép lại quá khứ để bắt đầu một chu kỳ mới rực rỡ."},
+    11: {"tag": "BẬC THẦY TRỰC GIÁC", "desc": "Năng lượng tâm linh vượt trội, bạn có tầm nhìn xa và khả năng truyền cảm hứng tâm hồn.", "advice": "Hãy tin vào những thông điệp mà vũ trụ gửi đến cho bạn."},
+    22: {"tag": "NGƯỜI KIẾN TẠO VĨ ĐẠI", "desc": "Bạn có khả năng biến những ý tưởng khổng lồ thành hiện thực thông qua kế hoạch chi tiết.", "advice": "Đừng ngần ngại ước mơ lớn, bạn có đủ lực để thực hiện nó."}
 }
 
-# --- HÀM TÍNH TOÁN ---
-def get_root_number(n):
-    while n > 9 and n not in [11, 22, 33]:
+# --- 3. HỆ THỐNG TÍNH TOÁN ---
+PYTHAGORAS_CHART = {
+    'A':1,'J':1,'S':1, 'B':2,'K':2,'T':2, 'C':3,'L':3,'U':3, 'D':4,'M':4,'V':4, 'E':5,'N':5,'W':5, 'F':6,'O':6,'X':6, 'G':7,'P':7,'Y':7, 'H':8,'Q':8,'Z':8, 'I':9,'R':9
+}
+
+def reduce_num(n, master=True):
+    while n > 9:
+        if master and n in [11, 22, 33]: return n
         n = sum(int(d) for d in str(n))
     return n
 
-# --- GIAO DIỆN CHÍNH ---
-st.title("🔮 HỆ THỐNG TRA CỨU MỆNH SỐ 2026")
+def calc_name(name):
+    name = ''.join(c for c in unicodedata.normalize('NFD', name.upper()) if unicodedata.category(c) != 'Mn')
+    return reduce_num(sum(PYTHAGORAS_CHART.get(c, 0) for c in name if c.isalpha()))
 
-with st.expander("📝 NHẬP THÔNG TIN TRA CỨU", expanded=True):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        name = st.text_input("Họ và Tên")
-    with col2:
-        dob = st.date_input("Ngày sinh", datetime(1995, 1, 1))
-    with col3:
-        phone = st.text_input("Số Điện Thoại")
-    
-    submit = st.button("🚀 XEM LUẬN GIẢI CHI TIẾT")
+# --- 4. GIAO DIỆN CHÍNH ---
+st.title("🔮 THẦN SỐ HỌC TOÀN DIỆN 2026")
+st.markdown("#### Khám phá sự kết hợp giữa Ngày Sinh & Họ Tên theo bảng Pythagoras")
 
-if submit and name:
-    # 1. Tính toán
-    b_num = get_root_number(dob.day + dob.month + sum(int(d) for d in str(dob.year)))
-    res = DATA.get(b_num, DATA[1])
+with st.sidebar:
+    st.header("📋 NHẬP THÔNG TIN")
+    user_name = st.text_input("Họ và Tên đầy đủ")
+    user_dob = st.date_input("Ngày tháng năm sinh", datetime(1995, 1, 1))
+    user_phone = st.text_input("Số điện thoại (để lưu kết quả)")
+    btn_scan = st.button("🚀 LUẬN GIẢI NGAY")
+
+if btn_scan and user_name:
+    # Tính toán
+    path_num = reduce_num(user_dob.day + user_dob.month + sum(int(d) for d in str(user_dob.year)))
+    name_num = calc_name(user_name)
+    info = INTERPRETATION.get(path_num, INTERPRETATION[1])
     
-    # 2. Lưu Google Sheets
+    # Lưu Sheet
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df_old = conn.read(ttl=0)
-        new_row = pd.DataFrame([{
-            "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "Họ Tên": name,
-            "Ngày Sinh": dob.strftime("%d/%m/%Y"),
-            "Số Chủ Đạo": str(b_num),
-            "Số Điện Thoại": phone if phone else "N/A"
-        }])
-        df_updated = pd.concat([df_old, new_row], ignore_index=True)
-        conn.update(data=df_updated)
-        st.toast("✅ Đã lưu dữ liệu khách hàng!")
-    except:
-        st.toast("⚠️ Kết nối Sheet đang bảo trì, vẫn hiển thị kết quả!")
+        new_row = pd.DataFrame([{"Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"), "Họ Tên": user_name, "Ngày Sinh": user_dob.strftime("%d/%m/%Y"), "Số Chủ Đạo": str(path_num), "Số Sứ Mệnh": str(name_num), "Số Điện Thoại": user_phone}])
+        conn.update(data=pd.concat([df_old, new_row], ignore_index=True))
+    except: pass
 
-    # 3. Hiển thị báo cáo Pro
-    st.divider()
-    
-    # Khu vực Metric
-    m1, m2, m3 = st.columns(3)
-    m1.metric("CON SỐ CHỦ ĐẠO", b_num)
-    m2.metric("NĂM THẾ GIỚI", "2026 (Số 1)")
-    m3.metric("NĂNG LƯỢNG", f"{b_num * 10}%")
+    # HIỂN THỊ KẾT QUẢ
+    st.write("---")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(f'<div class="metric-box"><h3>SỐ CHỦ ĐẠO</h3><h1 style="color:#6c5ce7;">{path_num}</h1><p>(Tính từ Ngày Sinh)</p></div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<div class="metric-box"><h3>SỐ SỨ MỆNH</h3><h1 style="color:#00b894;">{name_num}</h1><p>(Tính từ Họ Tên)</p></div>', unsafe_allow_html=True)
 
-    # Khu vực Luận giải
     st.markdown(f"""
     <div class="report-card">
-        <h2 style='color: #6c5ce7;'>✨ {res['tag']}</h2>
-        <p style='font-size: 1.2em;'><b>Bản chất:</b> {res['desc']}</p>
-        <p style='color: #2d3436;'><b>Lời khuyên năm 2026:</b> {res['advice']}</p>
+        <h2 style="color:#6c5ce7;">✨ {info['tag']}</h2>
+        <p style="font-size:1.1em;"><b>Luận giải:</b> {info['desc']}</p>
+        <p style="font-size:1.1em; color:#2d3436;"><b>Lời khuyên 2026:</b> {info['advice']}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Khu vực Biểu đồ
-    st.subheader("📊 PHÂN TÍCH CHỈ SỐ NĂNG LƯỢNG")
-    chart_data = pd.DataFrame({
-        'Chỉ số': ['Trực giác', 'Lãnh đạo', 'Sáng tạo', 'Thực thi', 'Cảm xúc'],
-        'Điểm': [b_num*8 if b_num < 10 else 95, 100-b_num*3, b_num*9 if b_num < 5 else 70, 85, 90]
-    })
-    st.bar_chart(chart_data, x='Chỉ số', y='Điểm')
+    # CHIA SẺ
+    st.subheader("📢 Chia sẻ vận mệnh của bạn")
+    msg = f"Tôi là số {path_num} - {info['tag']}. Tra cứu ngay tại:"
+    encoded_msg = urllib.parse.quote(msg)
+    url = "https://than-so-hoc-2026.streamlit.app/" # LINK APP CỦA BẠN
     
+    s1, s2 = st.columns(2)
+    s1.markdown(f'<a href="https://www.facebook.com/sharer/sharer.php?u={url}&quote={encoded_msg}" target="_blank" class="share-btn-fb">Chia sẻ Facebook</a>', unsafe_allow_html=True)
+    s2.markdown(f'<a href="https://zalo.me/s/share/?url={url}&note={encoded_msg}" target="_blank" class="share-btn-zalo">Chia sẻ Zalo</a>', unsafe_allow_html=True)
+
+    # BIỂU ĐỒ
+    st.write("---")
+    st.subheader("📊 BIỂU ĐỒ NĂNG LƯỢNG")
+    st.bar_chart(pd.DataFrame({'Chỉ số': ['Nội tại', 'Biểu đạt', 'Trực giác', 'Hành động'], 'Điểm': [path_num*10, name_num*10, 85, 75]}), x='Chỉ số', y='Điểm')
     st.balloons()
-elif submit and not name:
-    st.error("Vui lòng nhập tên để hệ thống làm việc!")
