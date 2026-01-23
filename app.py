@@ -10,7 +10,7 @@ import urllib.parse
 # Quản lý toàn bộ ảnh của App tại đây
 # =========================================================
 ASSETS = {
-    "BANNER_MAIN": "https://img.freepik.com/free-vector/mystical-astrology-background-with-zodiac-signs_23-2148425501.jpg",
+    "BANNER_MAIN": "https://www.pexels.com/vi-vn/anh/d-ng-tr-ng-gi-a-cay-c-i-38537/",
     "ICON_THAY_BOI": "https://cdn-icons-png.flaticon.com/512/1491/1491204.png",
     "ICON_SUCCESS": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
     "BG_CARD": "https://www.transparenttextures.com/patterns/cubes.png" # Ảnh nền vân nhẹ cho thẻ
@@ -117,3 +117,4 @@ if btn and name:
     c1.markdown(f'<a href="https://www.facebook.com/sharer/sharer.php?u={u}&quote={m}" target="_blank" class="share-fb">Facebook</a>', unsafe_allow_html=True)
     c2.markdown(f'<a href="https://zalo.me/s/share/?url={u}&note={m}" target="_blank" class="share-zalo">Zalo</a>', unsafe_allow_html=True)
     st.balloons()
+
