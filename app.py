@@ -136,8 +136,12 @@ with st.sidebar:
 
 # Tự động tính toán
 b_num, d_num = calculate_all(input_name, input_dob)
-res = EXTENDED_DATA.get(b_num, EXTENDED_DATA[1])
+# Ép kiểu b_num về chuỗi để khớp với kho dữ liệu
+res = EXTENDED_DATA.get(int(b_num), EXTENDED_DATA.get(1))
 
+# Nếu vẫn lỗi, hãy dùng dòng dự phòng cực kỳ an toàn này:
+if not res:
+    res = list(EXTENDED_DATA.values())[0]
 if not submitted:
     st.markdown("<div class='welcome-text'>✨ Hệ thống đã sẵn sàng! Đây là kết quả xem nhanh theo dữ liệu mẫu. Nhấn nút 'Khám Phá' để xem hiệu ứng! ✨</div>", unsafe_allow_html=True)
 
@@ -175,4 +179,5 @@ with c2:
 
 if submitted:
     st.balloons()
+
 
