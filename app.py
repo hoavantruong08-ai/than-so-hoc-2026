@@ -16,17 +16,17 @@ st.markdown("""
 
 # --- 2. KHO DỮ LIỆU ---
 EXTENDED_DATA = {
-    1: {"icon": "🦁", "tag": "NHÀ LÃNH ĐẠO TIÊN PHONG", "summary": "Số 1 đại diện cho sự khởi đầu, độc lập và quyết đoán.", "personality": "Bạn có ý chí mạnh mẽ, thích tự quyết định con đường mình đi."},
-    2: {"icon": "🤝", "tag": "SỨ GIẢ HÒA BÌNH", "summary": "Số 2 là con số của sự hợp tác, nhạy cảm và ngoại giao.", "personality": "Bạn có khả năng lắng nghe tuyệt vời và luôn mong muốn sự hài hòa."},
-    3: {"icon": "🎨", "tag": "NGƯỜI TRUYỀN CẢM HỨNG", "summary": "Số 3 tượng trưng cho sự sáng tạo, niềm vui và giao tiếp.", "personality": "Bạn là người hướng ngoại, giàu trí tưởng tượng và có khiếu hài hước."},
-    4: {"icon": "🧱", "tag": "NGƯỜI XÂY DỰNG NỀN TẢNG", "summary": "Số 4 đại diện cho sự ổn định, kỷ luật và thực tế.", "personality": "Bạn làm việc có hệ thống, đáng tin cậy và rất coi trọng sự trung thực."},
-    5: {"icon": "✈️", "tag": "NHÀ THÁM HIỂM TỰ DO", "summary": "Số 5 là con số của sự thay đổi, thích nghi và trải nghiệm.", "personality": "Bạn yêu thích sự tự do, thích khám phá và không ngại thử thách."},
-    6: {"icon": "❤️", "tag": "NGƯỜI NUÔI DƯỠNG TẬN TÂM", "summary": "Số 6 tượng trưng cho tình yêu thương, gia đình và trách nhiệm.", "personality": "Bạn là người ấm áp, luôn chăm sóc và bảo vệ những người mình yêu quý."},
-    7: {"icon": "🕵️", "tag": "NHÀ TRIẾT HỌC SÂU SẮC", "summary": "Số 7 đại diện cho sự phân tích, học hỏi và tâm linh.", "personality": "Bạn thích đào sâu kiến thức và cần không gian yên tĩnh để suy ngẫm."},
-    8: {"icon": "💰", "tag": "NHÀ ĐIỀU HÀNH CHIẾN LƯỢC", "summary": "Số 8 là con số của quyền lực, tài chính và sự cân bằng.", "personality": "Bạn có tham vọng lớn, khả năng kinh doanh và luôn hướng tới kết quả."},
-    9: {"icon": "🌍", "tag": "NGƯỜI NHÂN ÁI BAO DUNG", "summary": "Số 9 đại diện cho sự hoàn tất, nhân đạo và lý tưởng.", "personality": "Bạn có trái tim nhân hậu, luôn muốn giúp đỡ cộng đồng và thế giới."},
-    11: {"icon": "✨", "tag": "BẬC THẦY TRỰC GIÁC", "summary": "Số 11 là con số tâm linh mạnh mẽ, sự thức tỉnh và tầm nhìn.", "personality": "Bạn có trực giác nhạy bén và mang trong mình sứ mệnh truyền cảm hứng."},
-    22: {"icon": "🏗️", "tag": "BẬC THẦY KIẾN TẠO", "summary": "Số 22 có khả năng biến những ý tưởng vĩ đại thành hiện thực.", "personality": "Bạn sở hữu tầm nhìn xa trông rộng và khả năng thực thi phi thường."}
+    1: {"icon": "🦁", "tag": "NHÀ LÃNH ĐẠO", "summary": "Số 1 đại diện cho sự khởi đầu và độc lập.", "personality": "Bạn có ý chí mạnh mẽ.", "month_tips": "Tập trung vào dự án mới."},
+    2: {"icon": "🤝", "tag": "SỨ GIẢ HÒA BÌNH", "summary": "Số 2 là sự hợp tác và ngoại giao.", "personality": "Bạn lắng nghe tuyệt vời.", "month_tips": "Lắng nghe trực giác."},
+    3: {"icon": "🎨", "tag": "NGƯỜI TRUYỀN CẢM HỨNG", "summary": "Số 3 là sự sáng tạo và niềm vui.", "personality": "Bạn giàu trí tưởng tượng.", "month_tips": "Chia sẻ ý tưởng."},
+    4: {"icon": "🧱", "tag": "NGƯỜI XÂY DỰNG", "summary": "Số 4 là sự ổn định và kỷ luật.", "personality": "Bạn làm việc hệ thống.", "month_tips": "Lập kế hoạch chi tiết."},
+    5: {"icon": "✈️", "tag": "NHÀ THÁM HIỂM", "summary": "Số 5 là sự thay đổi và tự do.", "personality": "Bạn thích khám phá.", "month_tips": "Đón nhận thử thách."},
+    6: {"icon": "❤️", "tag": "NGƯỜI NUÔI DƯỠNG", "summary": "Số 6 là tình yêu và trách nhiệm.", "personality": "Bạn ấm áp, tận tâm.", "month_tips": "Dành thời gian cho gia đình."},
+    7: {"icon": "🕵️", "tag": "NHÀ TRIẾT HỌC", "summary": "Số 7 là sự học hỏi và tâm linh.", "personality": "Bạn thích đào sâu kiến thức.", "month_tips": "Dành thời gian chiêm nghiệm."},
+    8: {"icon": "💰", "tag": "NHÀ ĐIỀU HÀNH", "summary": "Số 8 là quyền lực và cân bằng.", "personality": "Bạn có tham vọng lớn.", "month_tips": "Đầu tư đúng đắn."},
+    9: {"icon": "🌍", "tag": "NGƯỜI NHÂN ÁI", "summary": "Số 9 là nhân đạo và lý tưởng.", "personality": "Bạn có trái tim bao dung.", "month_tips": "Học cách buông bỏ."},
+    11: {"icon": "✨", "tag": "BẬC THẦY TRỰC GIÁC", "summary": "Số 11 là sự thức tỉnh tâm linh.", "personality": "Trực giác bạn rất nhạy.", "month_tips": "Thực hành thiền định."},
+    22: {"icon": "🏗️", "tag": "BẬC THẦY KIẾN TẠO", "summary": "Số 22 biến ý tưởng thành hiện thực.", "personality": "Tầm nhìn xa trông rộng.", "month_tips": "Bắt tay vào dự án lớn."}
 }
 
 # --- 3. HÀM TÍNH TOÁN ---
@@ -52,7 +52,7 @@ with st.sidebar:
     st.markdown("---")
     submitted = st.button("🚀 KHÁM PHÁ ĐỊNH MỆNH")
 
-# --- 5. XỬ LÝ KẾT QUẢ & GHI SHEET ---
+# --- 5. XỬ LÝ LƯU SHEET & HIỂN THỊ ---
 if submitted:
     b_num, d_num = calculate_all(input_name, input_dob)
     res = EXTENDED_DATA.get(b_num, EXTENDED_DATA[1])
@@ -66,13 +66,13 @@ if submitted:
             "Họ Tên": input_name,
             "Ngày Sinh": input_dob.strftime("%d/%m/%Y"),
             "Số Chủ Đạo": str(b_num),
-            "Số Điện Thoại": input_phone if input_phone else "Không để lại"
+            "Số Điện Thoại": input_phone if input_phone else "Ẩn"
         }])
         df_updated = pd.concat([df_old, new_row], ignore_index=True)
         conn.update(data=df_updated)
-        st.toast("✅ Đã lưu dữ liệu vào Google Sheets!")
+        st.toast("✅ Đã lưu dữ liệu thành công!")
     except Exception as e:
-        st.warning("Lưu ý: Hệ thống đang chạy ở chế độ offline.")
+        st.error(f"Lỗi lưu Sheet: {e}")
 
     # Hiển thị
     st.markdown(f"## 🔮 KẾT QUẢ TRA CỨU: {input_name.upper()}")
@@ -86,4 +86,4 @@ if submitted:
         with st.expander("📝 XEM CHI TIẾT NHÂN CÁCH", expanded=True):
             st.write(res['personality'])
 else:
-    st.markdown("<div class='welcome-text'>✨ Hệ thống đã sẵn sàng!<br>Vui lòng điền thông tin bên trái và nhấn nút 'Khám Phá'.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='welcome-text'>✨ Hệ thống đã sẵn sàng!<br>Điền thông tin bên trái và nhấn nút 'Khám Phá'.</div>", unsafe_allow_html=True)
