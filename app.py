@@ -21,11 +21,14 @@ with st.sidebar:
 
 # --- 3. XỬ LÝ DỮ LIỆU ---
 if submitted:
+    # Tính toán
     b_num = get_root_number(dob.day + dob.month + sum(int(d) for d in str(dob.year)))
     
     try:
         # Kết nối Sheets
         conn = st.connection("gsheets", type=GSheetsConnection)
+        
+        # Đọc dữ liệu hiện có
         df_old = conn.read(ttl=0)
         
         # Tạo dòng mới (Cột E dùng dấu sắc chuẩn: "Số Điện Thoại")
@@ -40,12 +43,12 @@ if submitted:
         # Cập nhật lên Google Sheets
         df_updated = pd.concat([df_old, new_row], ignore_index=True)
         conn.update(data=df_updated)
-        st.success("✅ Đã lưu vào Google Sheets thành công!")
+        st.success("✅ Tuyệt vời! Dữ liệu đã được ghi vào Sổ Mệnh.")
         
     except Exception as e:
-        st.error(f"⚠️ App chưa có quyền Editor: {e}")
+        st.error(f"⚠️ Lỗi kết nối (Hãy kiểm tra quyền Editor của Sheet): {e}")
 
-    # Hiển thị kết quả
+    # Hiển thị kết quả ra màn hình
     st.divider()
     st.header(f"Kết quả cho: {name.upper()}")
     st.metric("SỐ CHỦ ĐẠO", b_num)
