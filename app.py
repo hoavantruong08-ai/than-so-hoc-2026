@@ -6,7 +6,7 @@ from streamlit_gsheets import GSheetsConnection
 # 1. Cấu hình giao diện
 st.set_page_config(page_title="Thần Số Học 2026", page_icon="🔮")
 
-# 2. Hàm tính toán số chủ đạo
+# 2. Hàm tính toán
 def get_root_number(n):
     while n > 9 and n not in [11, 22, 33]:
         n = sum(int(d) for d in str(n))
@@ -22,7 +22,6 @@ with st.sidebar:
 
 # 4. Xử lý khi nhấn nút
 if submitted:
-    # Tính số chủ đạo
     b_num = get_root_number(dob.day + dob.month + sum(int(d) for d in str(dob.year)))
     
     # KẾT NỐI VÀ LƯU GOOGLE SHEETS
@@ -30,7 +29,7 @@ if submitted:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df_old = conn.read(ttl=0)
         
-        # Tạo dòng mới (Cột E dùng dấu sắc: "Số Điện Thoại")
+        # Tạo dòng mới (Cột E dùng dấu sắc chuẩn: "Số Điện Thoại")
         new_row = pd.DataFrame([{
             "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "Họ Tên": name,
@@ -39,16 +38,15 @@ if submitted:
             "Số Điện Thoại": phone if phone else "N/A"
         }])
         
-        # Gộp dữ liệu và cập nhật lên Sheet
         df_updated = pd.concat([df_old, new_row], ignore_index=True)
         conn.update(data=df_updated)
         st.success("✅ Đã ghi nhận thông tin thành công!")
         
     except Exception as e:
-        st.error(f"⚠️ Lỗi kết nối Sheet: {e}")
+        st.error(f"⚠️ Lỗi kết nối: {e}")
 
     # Hiển thị kết quả
     st.divider()
-    st.header(f"Kết quả: {name.upper()}")
-    st.metric("SỐ CHỦ ĐẠO CỦA BẠN", b_num)
+    st.header(f"Kết quả cho: {name.upper()}")
+    st.metric("SỐ CHỦ ĐẠO", b_num)
     st.balloons()
