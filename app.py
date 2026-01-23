@@ -15,8 +15,7 @@ st.markdown("""
     /* Tùy chỉnh hiển thị date input */
     .stDateInput div { font-weight: bold; }
     </style>
-    """, unsafe_allow_html=True)
-
+    """, unsafe_allow_html=True
 # --- 2. HÀM TÍNH TOÁN ---
 def get_root_number(n):
     while n > 9 and n not in [11, 22, 33]:
@@ -139,7 +138,28 @@ b_num, d_num = calculate_all(input_name, input_dob)
 # Ép kiểu b_num về chuỗi để khớp với kho dữ liệu
 res = EXTENDED_DATA.get(int(b_num), EXTENDED_DATA.get(1))
 
-# Nếu vẫn lỗi, hãy dùng dòng dự phòng cực kỳ an toàn này:
+# --- ĐOẠN MÃ LƯU DỮ LIỆU ---
+    if submitted:
+        try:
+            # Kết nối và đọc dữ liệu
+            conn = st.connection("gsheets", type=st.connection("gsheets").__class__)
+            df_old = conn.read(ttl=0)
+            
+            # Tạo dòng mới (Tên cột khớp 100% với file Sheet của bạn)
+            new_row = pd.DataFrame([{
+                "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "Họ Tên": input_name,
+                "Ngày Sinh": input_dob.strftime("%d/%m/%Y"),
+                "Số Chủ Đạo": b_num,
+                "Số Điện Thoại": "Chưa nhập"
+            }])
+            
+            # Gộp và cập nhật
+            df_updated = pd.concat([df_old, new_row], ignore_index=True)
+            conn.update(data=df_updated)
+            st.toast("✅ Đã lưu vào sổ mệnh!")
+        except:
+            pass
 if not res:
     res = list(EXTENDED_DATA.values())[0]
 if not submitted:
@@ -179,5 +199,6 @@ with c2:
 
 if submitted:
     st.balloons()
+
 
 
