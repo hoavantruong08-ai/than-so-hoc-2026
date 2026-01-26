@@ -54,3 +54,4 @@ with col2:
         st.dataframe(df, use_container_width=True)
     except:
         st.info("Chưa có dữ liệu hoặc lỗi kết nối.")
+
