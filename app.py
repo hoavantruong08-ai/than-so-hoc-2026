@@ -6,7 +6,7 @@ from datetime import datetime
 # Kết nối tự động qua Secrets
 conn = st.connection("https://docs.google.com/spreadsheets/d/1zIkgqXFkF2QesVgbA5osCFgl6dnnY8lXr_JiZHzU1-c/edit?gid=0#gid=0", type=GSheetsConnection)
 
-st.title("🔮 Hệ Thống Thần Số Học Pro")
+st.title("🔮 Hệ Thống Thần Số Học 2026")
 
 with st.sidebar:
     st.header("📝 Nhập Thông Tin")
@@ -16,6 +16,7 @@ with st.sidebar:
     btn_calc = st.button("Luận Giải & Lưu")
 
 if btn_calc and name:
+    # Tính số chủ đạo
     total = sum(int(i) for i in dob.strftime("%d%m%Y"))
     while total > 11 and total != 22:
         total = sum(int(digit) for digit in str(total))
@@ -23,9 +24,8 @@ if btn_calc and name:
     st.success(f"Khách hàng: {name} - Số chủ đạo: {total}")
     
     try:
-        # Đọc dữ liệu hiện có
+        # Đọc và Lưu
         df = conn.read(ttl=0).astype(str)
-        # Tạo dòng mới
         new_row = pd.DataFrame([{
             "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "Họ Tên": name,
@@ -33,7 +33,6 @@ if btn_calc and name:
             "Số Chủ Đạo": str(total),
             "Số Điện Thoại": phone
         }])
-        # Cập nhật lên Sheet
         updated_df = pd.concat([df, new_row], ignore_index=True)
         conn.update(data=updated_df)
         st.balloons()
@@ -48,6 +47,3 @@ try:
     st.dataframe(data, use_container_width=True)
 except:
     st.info("Đang chờ dữ liệu...")
-
-
-
