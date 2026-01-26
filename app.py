@@ -3,38 +3,46 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 
-# Cấu hình trang
-st.set_page_config(page_title="Thần Số Học 2026", layout="wide", page_icon="🔮")
+# --- CẤU HÌNH MẬT KHẨU ---
+ADMIN_PASSWORD = "your_password_here"  # <--- THAY ĐỔI MẬT KHẨU CỦA BẠN TẠI ĐÂY
 
+# Cấu hình trang
+st.set_page_config(page_title="Quản Trị Thần Số Học", layout="wide", page_icon="🔐")
+
+# --- KIỂM TRA ĐĂNG NHẬP ---
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if not st.session_state["authenticated"]:
+    st.title("🔐 Hệ Thống Quản Trị Bảo Mật")
+    pwd_input = st.text_input("Nhập mật khẩu Admin để tiếp tục:", type="password")
+    if st.button("Đăng nhập"):
+        if pwd_input == ADMIN_PASSWORD:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("❌ Mật khẩu không chính xác!")
+    st.stop() # Dừng app tại đây nếu chưa đăng nhập
+
+# --- NỘI DUNG APP SAU KHI ĐĂNG NHẬP ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# --- HÀM HỖ TRỢ ---
 def tinh_so_chu_dao(ngay_sinh_val):
-    """Tính số chủ đạo từ ngày sinh"""
-    if pd.isna(ngay_sinh_val):
-        return "N/A"
-    
-    # Chuyển đổi về chuỗi số (bỏ các ký tự đặc biệt)
+    if pd.isna(ngay_sinh_val): return "N/A"
     if isinstance(ngay_sinh_val, (datetime, pd.Timestamp)):
         digits = ngay_sinh_val.strftime("%d%m%Y")
     else:
-        # Xử lý chuỗi từ Excel/CSV, lấy phần ngày trước khoảng trắng (nếu có)
         str_val = str(ngay_sinh_val).split(' ')[0]
         digits = "".join(filter(str.isdigit, str_val))
-    
-    if not digits:
-        return "N/A"
-        
+    if not digits: return "N/A"
     try:
         total = sum(int(i) for i in digits)
         while total > 11 and total != 22:
             total = sum(int(digit) for digit in str(total))
         return total
-    except:
-        return "N/A"
+    except: return "N/A"
 
 def find_default_index(column_list, keywords):
-    """Tự động tìm vị trí cột dựa trên từ khóa"""
     for i, name in enumerate(column_list):
         if any(key.lower() in str(name).lower() for key in keywords):
             return i
@@ -43,12 +51,14 @@ def find_default_index(column_list, keywords):
 # --- SIDEBAR ---
 with st.sidebar:
     st.title("⚙️ Quản Trị")
-    mode = st.radio("Chế độ nhập liệu:", ["Nhập đơn lẻ", "Upload danh sách"])
+    if st.button("Đăng xuất"):
+        st.session_state["authenticated"] = False
+        st.rerun()
     st.divider()
-    st.info("Phiên bản: 2.0 (Đã tối ưu Excel)")
+    mode = st.radio("Chế độ nhập liệu:", ["Nhập đơn lẻ", "Upload danh sách"])
 
 # --- MAIN ---
-st.title("🔮 Hệ Thống Thần Số Học")
+st.title("🔮 Hệ Thống Thần Số Học (Admin)")
 
 tab1, tab2 = st.tabs(["✨ Xử Lý Dữ Liệu", "📊 Kho Lưu Trữ"])
 
@@ -68,7 +78,7 @@ with tab1:
                     "Họ Tên": name,
                     "Ngày Sinh": dob.strftime("%d/%m/%Y"),
                     "Số Chủ Đạo": str(so),
-                    "Số Điện Thoại": f"'{phone}" # Thêm dấu nháy để tránh mất số 0 trong Google Sheets
+                    "Số Điện Thoại": f"'{phone}"
                 }])
                 df_old = conn.read(ttl=0).astype(str)
                 updated_df = pd.concat([df_old, new_data], ignore_index=True)
@@ -86,72 +96,39 @@ with tab1:
                 else:
                     input_df = pd.read_excel(uploaded_file, engine='openpyxl')
                 
-                # Làm sạch dữ liệu ngày tháng hiển thị trong bảng thô
-                temp_display = input_df.copy()
-                st.write("🔍 **Dữ liệu từ file của bạn:**")
-                st.dataframe(temp_display.head(10), use_container_width=True)
-
-                # Cấu hình chọn cột
+                st.dataframe(input_df.head(5), use_container_width=True)
                 st.divider()
-                st.markdown("### 🛠 Cấu hình cột dữ liệu")
                 cols = input_df.columns.tolist()
                 c1, c2, c3 = st.columns(3)
                 
-                # Tự động gợi ý cột
-                idx_name = find_default_index(cols, ["họ tên", "tên", "name", "khách hàng"])
-                idx_dob = find_default_index(cols, ["ngày sinh", "dob", "birthday", "sinh"])
-                idx_phone = find_default_index(cols, ["điện thoại", "phone", "sđt", "tel"])
+                idx_name = find_default_index(cols, ["họ tên", "tên", "name"])
+                idx_dob = find_default_index(cols, ["ngày sinh", "dob", "birthday"])
+                idx_phone = find_default_index(cols, ["điện thoại", "phone", "sđt"])
 
                 col_name = c1.selectbox("Cột Họ Tên", cols, index=idx_name)
                 col_dob = c2.selectbox("Cột Ngày Sinh", cols, index=idx_dob)
                 col_phone = c3.selectbox("Cột Số Điện Thoại", cols, index=idx_phone)
 
-                if st.button("🪄 Xử lý & Đẩy lên Google Sheets", type="primary", use_container_width=True):
-                    with st.spinner("Đang tính toán và đồng bộ dữ liệu..."):
-                        # Tạo bản sao và xử lý
+                if st.button("🪄 Xử lý & Đẩy lên Google Sheets", type="primary"):
+                    with st.spinner("Đang xử lý..."):
                         processed_df = input_df[[col_name, col_dob, col_phone]].copy()
                         processed_df.columns = ["Họ Tên", "Ngày Sinh", "Số Điện Thoại"]
-                        
-                        # Tính số chủ đạo
                         processed_df["Số Chủ Đạo"] = processed_df["Ngày Sinh"].apply(tinh_so_chu_dao)
-                        
-                        # Định dạng lại ngày sinh thành chuỗi dd/mm/yyyy
-                        def format_date(val):
-                            try:
-                                return pd.to_datetime(val).strftime("%d/%m/%Y")
-                            except:
-                                return str(val)
-                        
-                        processed_df["Ngày Sinh"] = processed_df["Ngày Sinh"].apply(format_date)
+                        processed_df["Ngày Sinh"] = processed_df["Ngày Sinh"].apply(lambda x: pd.to_datetime(x).strftime("%d/%m/%Y") if pd.notnull(x) else "")
                         processed_df["Thời Gian"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         processed_df["Số Điện Thoại"] = processed_df["Số Điện Thoại"].astype(str)
                         
-                        # Đẩy lên Sheets
                         df_old = conn.read(ttl=0).astype(str)
                         final_df = pd.concat([df_old, processed_df], ignore_index=True)
                         conn.update(data=final_df)
-                        
-                        st.success(f"✅ Thành công! Đã thêm {len(processed_df)} dòng vào hệ thống.")
+                        st.success(f"✅ Đã thêm {len(processed_df)} khách hàng!")
                         st.balloons()
             except Exception as e:
-                st.error(f"Lỗi: {e}. Vui lòng kiểm tra lại cấu trúc file.")
+                st.error(f"Lỗi: {e}")
 
 with tab2:
-    col_a, col_b = st.columns([4, 1])
-    col_a.subheader("📋 Danh sách đã lưu")
-    if col_b.button("🔄 Tải lại", use_container_width=True):
+    if st.button("🔄 Tải lại dữ liệu"):
         st.cache_data.clear()
         st.rerun()
-    
     data = conn.read(ttl=0)
-    # Hiển thị bảng đẹp hơn với cấu hình cột
-    st.dataframe(
-        data, 
-        use_container_width=True,
-        column_config={
-            "Thời Gian": st.column_config.TextColumn("🕒 Thời Gian"),
-            "Số Chủ Đạo": st.column_config.NumberColumn("🔢 Số Chủ Đạo", format="%d"),
-            "Số Điện Thoại": st.column_config.TextColumn("📞 Số Điện Thoại")
-        },
-        hide_index=True
-    )
+    st.dataframe(data, use_container_width=True, hide_index=True)
