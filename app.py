@@ -1,52 +1,109 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="Thần Số Học 2026")
+# Cấu hình trang
+st.set_page_config(page_title="Thần Số Học 2026", layout="wide", page_icon="🔮")
 
-# Kết nối
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.title("🔮 Hệ Thống Thần Số Học")
-
-# Nhập liệu đơn giản
-with st.form("form_nhap"):
-    name = st.text_input("Họ tên:")
-    phone = st.text_input("Số điện thoại:")
-    dob = st.date_input("Ngày sinh")
-    submit = st.form_submit_button("Tính & Lưu")
-
-if submit:
-    if name and phone:
-        # Tính số chủ đạo logic thuần
-        d = dob.strftime("%d%m%Y")
-        total = sum(int(i) for i in d)
+def tinh_so_chu_dao(ngay_sinh_val):
+    # Chuyển đổi về string để tính toán
+    if isinstance(ngay_sinh_val, datetime):
+        digits = ngay_sinh_val.strftime("%d%m%Y")
+    else:
+        # Trường hợp là chuỗi từ Excel/CSV
+        digits = str(ngay_sinh_val).replace("/", "").replace("-", "").split()[0]
+    
+    try:
+        total = sum(int(i) for i in digits if i.isdigit())
         while total > 11 and total != 22:
             total = sum(int(digit) for digit in str(total))
-        
-        try:
-            # Lấy data và thêm dòng mới bằng list (không dùng pandas)
-            data = conn.read(ttl=0)
-            new_row = [
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                name,
-                dob.strftime("%d/%m/%Y"),
-                str(total),
-                phone
-            ]
-            data.loc[len(data)] = new_row
-            conn.update(data=data)
-            st.success(f"Đã lưu thành công! Số chủ đạo: {total}")
-            st.balloons()
-        except Exception as e:
-            st.error(f"Lỗi: {e}")
-    else:
-        st.warning("Vui lòng nhập đủ tên và số điện thoại!")
+        return total
+    except:
+        return "N/A"
 
-# Hiển thị bảng
-st.divider()
-try:
-    df = conn.read(ttl=0)
-    st.dataframe(df, use_container_width=True)
-except:
-    st.info("Đang chờ dữ liệu...")
+# --- SIDEBAR ---
+with st.sidebar:
+    st.title("⚙️ Quản Trị")
+    mode = st.radio("Chế độ nhập liệu:", ["Nhập đơn lẻ", "Upload danh sách"])
+
+# --- MAIN ---
+st.title("🔮 Hệ Thống Thần Số Học")
+
+tab1, tab2 = st.tabs(["✨ Xử Lý Dữ Liệu", "📊 Kho Lưu Trữ"])
+
+with tab1:
+    if mode == "Nhập đơn lẻ":
+        with st.form("single_input"):
+            col1, col2 = st.columns(2)
+            name = col1.text_input("Họ tên:")
+            phone = col2.text_input("Số điện thoại:")
+            dob = st.date_input("Ngày sinh:", min_value=datetime(1950, 1, 1))
+            submit = st.form_submit_button("Tính & Lưu")
+            
+            if submit and name and phone:
+                so = tinh_so_chu_dao(dob)
+                new_data = pd.DataFrame([{
+                    "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    "Họ Tên": name,
+                    "Ngày Sinh": dob.strftime("%d/%m/%Y"),
+                    "Số Chủ Đạo": str(so),
+                    "Số Điện Thoại": phone
+                }])
+                df_old = conn.read(ttl=0).astype(str)
+                updated_df = pd.concat([df_old, new_data], ignore_index=True)
+                conn.update(data=updated_df)
+                st.success(f"Đã lưu: {name} - Số chủ đạo: {so}")
+
+    else:
+        st.subheader("📁 Tải file lên hệ thống")
+        uploaded_file = st.file_uploader("Chọn file Excel (.xlsx) hoặc CSV", type=["csv", "xlsx"])
+        
+        if uploaded_file:
+            # Xử lý đọc file dựa trên định dạng
+            try:
+                if uploaded_file.name.endswith('.csv'):
+                    input_df = pd.read_csv(uploaded_file)
+                else:
+                    input_df = pd.read_excel(uploaded_file, engine='openpyxl')
+                
+                st.write("🔍 **Dữ liệu thô từ file của bạn:**")
+                st.dataframe(input_df.head(5), use_container_width=True)
+
+                # Chọn cột (để linh hoạt với file của bạn)
+                st.divider()
+                st.info("Hãy chọn các cột tương ứng trong file của bạn:")
+                cols = input_df.columns.tolist()
+                c1, c2, c3 = st.columns(3)
+                col_name = c1.selectbox("Cột Họ Tên", cols)
+                col_dob = c2.selectbox("Cột Ngày Sinh", cols)
+                col_phone = c3.selectbox("Cột Số Điện Thoại", cols)
+
+                if st.button("🪄 Xử lý hàng loạt & Đẩy lên Google Sheets"):
+                    with st.spinner("Đang tính toán..."):
+                        # Tạo bản sao để xử lý
+                        processed_df = input_df[[col_name, col_dob, col_phone]].copy()
+                        processed_df.columns = ["Họ Tên", "Ngày Sinh", "Số Điện Thoại"]
+                        
+                        # Tính số chủ đạo cho từng dòng
+                        processed_df["Số Chủ Đạo"] = processed_df["Ngày Sinh"].apply(tinh_so_chu_dao)
+                        processed_df["Thời Gian"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        
+                        # Đẩy lên Sheets
+                        df_old = conn.read(ttl=0).astype(str)
+                        final_df = pd.concat([df_old, processed_df], ignore_index=True)
+                        conn.update(data=final_df)
+                        
+                        st.success(f"✅ Đã xử lý và tải lên thành công {len(processed_df)} khách hàng!")
+                        st.balloons()
+            except Exception as e:
+                st.error(f"Lỗi khi đọc file: {e}. Đảm bảo file đúng định dạng.")
+
+with tab2:
+    if st.button("🔄 Tải lại dữ liệu"):
+        st.cache_data.clear()
+    
+    data = conn.read(ttl=0)
+    st.dataframe(data, use_container_width=True)
