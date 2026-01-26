@@ -2,22 +2,20 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-st.set_page_config(page_title="Thần Số Học - Upload", layout="wide")
-
 # Kết nối Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 url = st.secrets["connections"]["gsheets"]["spreadsheet"]
 
 st.title("🔮 Hệ Thống Upload Dữ Liệu")
 
-# Giao diện Upload
-uploaded_file = st.file_uploader("Chọn file Excel từ máy tính", type=["xlsx"])
+# Giao diện chọn file từ máy tính
+uploaded_file = st.file_uploader("Chọn file Excel", type=["xlsx"])
 
 if uploaded_file is not None:
     try:
         df_new = pd.read_excel(uploaded_file)
         st.write("👀 Xem trước dữ liệu:")
-        st.dataframe(df_new)
+        st.dataframe(df_new) # Hiện kết quả lên app
         
         if st.button("🚀 Xác nhận đẩy lên Google Sheet"):
             existing_data = conn.read(spreadsheet=url, usecols=list(range(5)))
@@ -28,7 +26,6 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"Lỗi: {e}")
 
-# Hiển thị bảng tổng
 st.divider()
-st.subheader("📊 Dữ liệu trên hệ thống")
+st.subheader("📊 Dữ liệu hiện có")
 st.dataframe(conn.read(spreadsheet=url, usecols=list(range(5))))
