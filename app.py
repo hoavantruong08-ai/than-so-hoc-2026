@@ -7,7 +7,7 @@ from datetime import datetime
 st.set_page_config(page_title="Thần Số Học Pro 2026", page_icon="🔮", layout="wide")
 
 # 2. ĐƯỜNG LINK CỦA BẠN (Dòng 10 quan trọng đây)
-url = "https://docs.google.com/spreadsheets/d/1zlkgqXFkF2QesVgbA5osCFgl6dnny8IXr_jiZHzU1-c/edit#gid=0"
+url = "https://docs.google.com/spreadsheets/d/1zlkgqXFkF2QesVgbA5osCFgl6dnny8IXr_jiZHzU1-c/edit?gid=0#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 st.title("🔮 Hệ Thống Luận Giải Thần Số Học")
@@ -69,3 +69,4 @@ with col2:
         st.dataframe(data, use_container_width=True, hide_index=True)
     except:
         st.info("Chưa có dữ liệu.")
+
