@@ -6,7 +6,7 @@ from datetime import datetime
 # 1. Cấu hình trang
 st.set_page_config(page_title="Thần Số Học Pro 2026", page_icon="🔮", layout="wide")
 
-# 2. Kết nối Google Sheets (Sử dụng link chính xác của bạn)
+# 2. ĐƯỜNG LINK CỦA BẠN (Dòng 10 quan trọng đây)
 url = "https://docs.google.com/spreadsheets/d/1zlkgqXFkF2QesVgbA5osCFgl6dnny8IXr_jiZHzU1-c/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -27,7 +27,7 @@ col1, col2 = st.columns([1, 1])
 with col1:
     st.subheader("🔍 Kết Quả Phân Tích")
     if btn_calc and name:
-        # Thuật toán tính Số chủ đạo chuẩn
+        # Thuật toán tính Số chủ đạo
         s = dob.strftime("%d%m%Y")
         total = sum(int(i) for i in s)
         while total > 11 and total != 22:
@@ -36,14 +36,14 @@ with col1:
         st.success(f"Khách hàng: **{name}**")
         st.info(f"Con số chủ đạo: **Số {total}**")
         
-        # NÚT LƯU QUAN TRỌNG
+        # NÚT LƯU - Khi nhấn sẽ ghi vào Google Sheets
         if st.button("❤️ Lưu kết quả này"):
             try:
-                # Đọc dữ liệu cũ
-                df_old = conn.read(spreadsheet=url)
+                # Đọc dữ liệu cũ (ttl=0 để lấy mới nhất)
+                df_old = conn.read(spreadsheet=url, ttl=0)
                 
-                # Tạo dòng mới khớp 100% tên cột trong file Sheets
-                new_data = pd.DataFrame([{
+                # Tạo dòng mới (Khớp tên cột trong file Sheets của bạn)
+                new_row = pd.DataFrame([{
                     "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                     "Họ Tên": name,
                     "Ngày Sinh": dob.strftime("%d/%m/%Y"),
@@ -51,21 +51,20 @@ with col1:
                     "Số Điện Thoại": str(phone)
                 }])
                 
-                # Ghi đè cập nhật lên Cloud
-                df_final = pd.concat([df_old, new_data], ignore_index=True)
+                # Ghi đè cập nhật
+                df_final = pd.concat([df_old, new_row], ignore_index=True)
                 conn.update(spreadsheet=url, data=df_final)
                 
                 st.toast("Đã lưu thành công!", icon="✅")
-                st.rerun() # Refresh để hiện ở bảng bên cạnh
+                st.rerun() 
             except Exception as e:
-                st.error(f"Lỗi: {e}. Kiểm tra lại quyền Editor của Sheet!")
+                st.error(f"Lỗi: {e}. Nhớ kiểm tra quyền 'Editor' của link nhé!")
     else:
         st.write("Vui lòng nhập thông tin bên trái.")
 
 with col2:
     st.subheader("⭐ Danh Sách Đã Lưu")
     try:
-        # ttl=0 để luôn lấy dữ liệu mới nhất từ Sheet
         data = conn.read(spreadsheet=url, ttl=0)
         st.dataframe(data, use_container_width=True, hide_index=True)
     except:
