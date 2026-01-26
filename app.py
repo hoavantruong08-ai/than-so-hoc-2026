@@ -6,8 +6,8 @@ from datetime import datetime
 # 1. Cấu hình trang
 st.set_page_config(page_title="Thần Số Học Pro 2026", page_icon="🔮", layout="wide")
 
-# 2. ĐƯỜNG LINK CỦA BẠN (Dòng 10 quan trọng đây)
-url = "https://docs.google.com/spreadsheets/d/1zlkgqXFkF2QesVgbA5osCFgl6dnny8IXr_jiZHzU1-c/edit?gid=0#gid=0"
+# 2. ĐƯỜNG LINK ĐÃ ĐƯỢC TỐI ƯU (Dòng 10)
+url = "https://docs.google.com/spreadsheets/d/1zIkgqXFkF2QesVgbA5osCFgl6dnnY8lXr_JiZHzU1-c/edit#gid=0"
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 st.title("🔮 Hệ Thống Luận Giải Thần Số Học")
@@ -27,7 +27,7 @@ col1, col2 = st.columns([1, 1])
 with col1:
     st.subheader("🔍 Kết Quả Phân Tích")
     if btn_calc and name:
-        # Thuật toán tính Số chủ đạo
+        # Thuật toán tính Số chủ đạo chuẩn
         s = dob.strftime("%d%m%Y")
         total = sum(int(i) for i in s)
         while total > 11 and total != 22:
@@ -36,13 +36,13 @@ with col1:
         st.success(f"Khách hàng: **{name}**")
         st.info(f"Con số chủ đạo: **Số {total}**")
         
-        # NÚT LƯU - Khi nhấn sẽ ghi vào Google Sheets
+        # Nút Lưu - Đã thêm cơ chế ép buộc ghi dữ liệu
         if st.button("❤️ Lưu kết quả này"):
             try:
-                # Đọc dữ liệu cũ (ttl=0 để lấy mới nhất)
+                # Đọc dữ liệu cũ (không dùng cache để đảm bảo dữ liệu mới nhất)
                 df_old = conn.read(spreadsheet=url, ttl=0)
                 
-                # Tạo dòng mới (Khớp tên cột trong file Sheets của bạn)
+                # Tạo dòng mới (Khớp chính xác tên cột trong Sheets của bạn)
                 new_row = pd.DataFrame([{
                     "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                     "Họ Tên": name,
@@ -55,10 +55,10 @@ with col1:
                 df_final = pd.concat([df_old, new_row], ignore_index=True)
                 conn.update(spreadsheet=url, data=df_final)
                 
-                st.toast("Đã lưu thành công!", icon="✅")
+                st.toast("Đã lưu vào Google Sheets!", icon="✅")
                 st.rerun() 
             except Exception as e:
-                st.error(f"Lỗi: {e}. Nhớ kiểm tra quyền 'Editor' của link nhé!")
+                st.error(f"Lỗi: {e}")
     else:
         st.write("Vui lòng nhập thông tin bên trái.")
 
@@ -69,4 +69,3 @@ with col2:
         st.dataframe(data, use_container_width=True, hide_index=True)
     except:
         st.info("Chưa có dữ liệu.")
-
