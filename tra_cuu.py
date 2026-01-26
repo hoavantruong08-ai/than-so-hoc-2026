@@ -16,16 +16,8 @@ hide_st_style = """
             .stDeployButton {display:none;}
             #stDecoration {display:none;}
             [data-testid="stSidebarNav"] {display: none;}
-            
-            /* Ẩn hoàn toàn nút Manage App và Toolbar của Streamlit */
             .stAppDeployButton {display: none !important;}
-            div[data-testid="stStatusWidget"] {display: none !important;}
-            footer {display: none !important;}
-            
-            /* Xóa bỏ biểu tượng Streamlit nhỏ ở góc phải */
-            #viewerBadge {display: none !important;}
-            button[title="View source code"] {display: none !important;}
-            .viewerBadge_container__1S13D {display: none !important;}
+            iframe[title="manage-app"] {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -36,39 +28,43 @@ if "client_auth" not in st.session_state:
 
 if not st.session_state["client_auth"]:
     st.title("🔮 Cổng Tra Cứu Thần Số Học")
-    st.info("Vui lòng nhập mật khẩu truy cập được cung cấp để bắt đầu tra cứu.")
-    
-    pwd_input = st.text_input("Mật khẩu truy cập:", type="password")
+    pwd_input = st.text_input("Nhập mật khẩu truy cập:", type="password")
     if st.button("Truy cập"):
         if pwd_input == CLIENT_PASSWORD:
             st.session_state["client_auth"] = True
             st.rerun()
         else:
-            st.error("❌ Mật khẩu không chính xác. Vui lòng liên hệ hỗ trợ.")
+            st.error("❌ Mật khẩu không chính xác.")
     st.stop()
 
 # --- NỘI DUNG SAU KHI ĐĂNG NHẬP ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 st.title("🔍 Tra Cứu Kết Quả Thần Số Học")
-
-# Nút thoát nằm gọn gàng ở góc
-if st.button("Thoát hệ thống"):
-    st.session_state["client_auth"] = False
-    st.rerun()
+st.write("Vui lòng nhập chính xác thông tin để xem kết quả.")
 
 with st.container():
-    search_query = st.text_input("Bạn hãy nhập tên : Đào hoặc Lê:")
+    input_name = st.text_input("1. Nhập Họ và Tên của bạn:")
+    input_phone = st.text_input("2. Nhập Số điện thoại của bạn:")
     btn_search = st.button("Tra cứu ngay")
 
 if btn_search:
-    if search_query:
+    if input_name and input_phone:
         try:
+            # Đọc dữ liệu từ Google Sheets
             df = conn.read(ttl=0)
-            df['Số Điện Thoại'] = df['Số Điện Thoại'].astype(str).str.replace(".0", "", regex=False).str.strip()
-            search_query = search_query.strip()
             
-            result = df[df['Số Điện Thoại'] == search_query]
+            # Xử lý chuẩn hóa dữ liệu để tìm kiếm (không phân biệt hoa thường)
+            # 1. Chuẩn hóa Họ Tên: bỏ khoảng trắng thừa và chuyển về chữ thường
+            df['Họ Tên Tìm Kiếm'] = df['Họ Tên'].astype(str).str.strip().str.lower()
+            name_query = input_name.strip().lower()
+            
+            # 2. Chuẩn hóa Số Điện Thoại: bỏ .0 và khoảng trắng
+            df['SĐT Tìm Kiếm'] = df['Số Điện Thoại'].astype(str).str.replace(".0", "", regex=False).str.strip()
+            phone_query = input_phone.strip()
+            
+            # Tìm kiếm khớp cả 2 điều kiện
+            result = df[(df['Họ Tên Tìm Kiếm'] == name_query) & (df['SĐT Tìm Kiếm'] == phone_query)]
             
             if not result.empty:
                 st.success(f"Chào bạn **{result.iloc[0]['Họ Tên']}**! Đây là kết quả của bạn:")
@@ -78,10 +74,14 @@ if btn_search:
                     <p style="font-size: 18px;">Ngày sinh: {result.iloc[0]['Ngày Sinh']}</p>
                 </div>
                 """, unsafe_allow_html=True)
-                st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới của bạn!")
+                st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới!")
             else:
-                st.error("Chưa tìm thấy dữ liệu cho số điện thoại này.")
-        except:
-            st.error("Lỗi kết nối dữ liệu. Vui lòng báo Admin dán lại Secrets.")
+                st.error("❌ Không tìm thấy thông tin phù hợp. Vui lòng kiểm tra lại Họ tên hoặc SĐT.")
+        except Exception as e:
+            st.error("Lỗi kết nối dữ liệu. Vui lòng báo Admin.")
     else:
-        st.warning("Vui lòng nhập số điện thoại.")
+        st.warning("⚠️ Vui lòng điền đầy đủ cả Họ tên và Số điện thoại.")
+
+if st.button("Thoát hệ thống"):
+    st.session_state["client_auth"] = False
+    st.rerun()
