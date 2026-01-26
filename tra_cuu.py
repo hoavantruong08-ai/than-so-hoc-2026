@@ -16,11 +16,16 @@ hide_st_style = """
             .stDeployButton {display:none;}
             #stDecoration {display:none;}
             [data-testid="stSidebarNav"] {display: none;}
-            /* Đoạn quan trọng để ẩn nút Manage App */
-            div[data-testid="stStatusWidget"] {display: none;}
+            
+            /* Ẩn hoàn toàn nút Manage App và Toolbar của Streamlit */
             .stAppDeployButton {display: none !important;}
-            iframe[title="manage-app"] {display: none !important;}
-            button[data-testid="baseButton-secondary"] {display: none !important;}
+            div[data-testid="stStatusWidget"] {display: none !important;}
+            footer {display: none !important;}
+            
+            /* Xóa bỏ biểu tượng Streamlit nhỏ ở góc phải */
+            #viewerBadge {display: none !important;}
+            button[title="View source code"] {display: none !important;}
+            .viewerBadge_container__1S13D {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
