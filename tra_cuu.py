@@ -77,24 +77,28 @@ if btn_search:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # --- PHẦN GHI LỊCH SỬ TRA CỨU ---
+                # --- PHẦN GHI LỊCH SỬ TRA CỨU (GIỜ VIỆT NAM) ---
                 try:
+                    from datetime import datetime, timedelta
+                    
+                    # Lấy giờ thực của máy chủ và cộng thêm 7 tiếng để ra giờ Việt Nam
+                    gio_vn = datetime.now() + timedelta(hours=7)
+                    thoi_gian_thuc = gio_vn.strftime("%d/%m/%Y %H:%M:%S")
+                    
                     # Tạo dòng dữ liệu lịch sử mới
                     history_entry = pd.DataFrame([{
-                        "Thời Gian Tra Cứu": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                        "Thời Gian Tra Cứu": thoi_gian_thuc,
                         "Họ Tên": ho_ten_goc,
                         "Số Điện Thoại": f"'{phone_query}",
                         "Số Chủ Đạo": so_chu_dao,
                         "Trạng Thái": "Thành công"
                     }])
                     
-                    # Đọc Sheet Lịch sử (nếu chưa có sẽ tự tạo bảng mới)
-                    # Lưu ý: Bạn nên tạo sẵn một Tab tên là 'History' trong file Google Sheets
+                    # Đọc và cập nhật vào Sheet History
                     df_history = conn.read(worksheet="History", ttl=0)
                     updated_history = pd.concat([df_history, history_entry], ignore_index=True)
                     conn.update(worksheet="History", data=updated_history)
                 except:
-                    # Nếu chưa có sheet 'History', hệ thống sẽ vẫn chạy nhưng không lưu được lịch sử
                     pass
                 
                 st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới!")
