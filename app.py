@@ -2,61 +2,32 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-# Cấu hình trang
-st.set_page_config(page_title="Luận Giải Thần Số Học 2026", page_icon="🔮")
+st.set_page_config(page_title="Thần Số Học VIP", page_icon="🌟")
+st.title("🔮 App Thần Số Học Mới - Kết Nối Thẳng")
 
-st.title("🔮 Phần Mềm Luận Giải Thần Số Học")
-st.markdown("---")
+# Link Sheet của bạn
+url = "https://docs.google.com/spreadsheets/d/1zIkgqXFkF2QesVgbA5osCFgl6dnnY8lXr_JiZHzU1-c/edit#gid=0"
 
-# 1. Kết nối với Google Sheets (Lấy thông tin từ Secrets)
-try:
-    conn = st.connection("gsheets", type=GSheetsConnection)
-except Exception as e:
-    st.error("Lỗi kết nối Secrets! Vui lòng kiểm tra lại bảng đen trong Settings.")
-    st.stop()
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 2. Form nhập liệu
-with st.form(key="input_form"):
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Họ và tên:")
-        phone = st.text_input("Số điện thoại:")
-    with col2:
-        dob = st.date_input("Ngày tháng năm sinh:")
-        gender = st.selectbox("Giới tính:", ["Nam", "Nữ", "Khác"])
+with st.form("form_moi"):
+    name = st.text_input("Nhập Họ Tên:")
+    phone = st.text_input("Nhập Số Điện Thoại:")
+    submit = st.form_submit_button("Gửi Dữ Liệu")
 
-    submit_button = st.form_submit_button(label="Luận Giải & Lưu Dữ Liệu")
-
-# 3. Xử lý dữ liệu khi nhấn nút
-if submit_button:
+if submit:
     if name and phone:
         try:
-            # Đọc dữ liệu hiện tại từ Sheet
-            existing_data = conn.read(worksheet="Sheet1", usecols=[0,1,2,3])
-            
-            # Tạo dòng dữ liệu mới
-            new_data = pd.DataFrame([{
-                "Họ Tên": name,
-                "Số Điện Thoại": phone,
-                "Ngày Sinh": str(dob),
-                "Giới Tính": gender
-            }])
-            
-            # Kết hợp dữ liệu cũ và mới
-            updated_df = pd.concat([existing_data, new_data], ignore_index=True)
-            
-            # Cập nhật ngược lại Google Sheet
-            conn.update(worksheet="Sheet1", data=updated_df)
-            
+            # Đọc dữ liệu
+            df = conn.read(spreadsheet=url)
+            # Thêm dòng mới
+            new_data = pd.DataFrame([{"Họ tên": name, "Số điện thoại": phone}])
+            updated_df = pd.concat([df, new_data], ignore_index=True)
+            # Cập nhật
+            conn.update(spreadsheet=url, data=updated_df)
+            st.success("Lưu thành công rồi nhé!")
             st.balloons()
-            st.success(f"Chúc mừng {name}! Dữ liệu đã được lưu thành công vào Google Sheet.")
-            st.info("Hệ thống đang tính toán các chỉ số thần số học cho bạn...")
-            
         except Exception as e:
-            st.error(f"Lỗi khi lưu dữ liệu: {e}")
-            st.warning("Mẹo: Hãy chắc chắn bạn đã chia sẻ Sheet cho Email Service Account với quyền 'Editor'.")
+            st.error(f"Lỗi rồi: {e}")
     else:
-        st.warning("Vui lòng nhập đầy đủ Họ tên và Số điện thoại!")
-
-st.markdown("---")
-st.caption("Phát triển bởi AI Collaborator - 2026")
+        st.warning("Điền đủ thông tin đi bạn ơi!")
