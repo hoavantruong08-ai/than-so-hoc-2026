@@ -1,50 +1,58 @@
-
 import streamlit as st
-import os
-import base64
+import pandas as pd
 
-# 1. CẤU HÌNH TRANG
-st.set_page_config(page_title="Thần Số Học 2026", layout="wide")
+# 1. Cấu hình trang
+st.set_page_config(page_title="Thần Số Học Pro 2026", page_icon="✨")
 
-# Hàm mã hóa ảnh để làm nền (giúp App không bị trắng xóa)
-def get_base64(bin_file):
-    if os.path.exists(bin_file):
-        with open(bin_file, 'rb') as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    return None
+# 2. Khởi tạo kho lưu trữ trong session (nếu chưa có)
+if 'saved_results' not in st.session_state:
+    st.session_state.saved_results = []
 
-# 2. THIẾT LẬP HÌNH NỀN "CÁI ĐĨA ĐEN" CỦA BẠN
-file_nen = "Untitled-image_1.ico" 
-bin_str = get_base64(file_nen)
+st.title("🔮 Hệ Thống Luận Giải Thần Số Học")
+st.markdown("---")
 
-if bin_str:
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/png;base64,{bin_str}");
-            background-size: cover;
-            background-attachment: fixed;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-# 3. HIỂN THỊ THẦN TÀI Ở GIỮA
-file_than_tai = "Than Tai 1.ico"
-if os.path.exists(file_than_tai):
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        st.image(file_than_tai, width=250)
-        st.markdown("<h2 style='text-align: center; color: gold;'>THẦN TÀI GÕ CỬA 2026</h2>", unsafe_allow_html=True)
-
-# 4. SIDEBAR NHẬP LIỆU
+# --- KHU VỰC 1: NHẬP THÔNG TIN ---
 with st.sidebar:
-    st.header("🔮 THÔNG TIN")
-    name = st.text_input("Họ và Tên")
-    dob = st.date_input("Ngày sinh")
-    if st.button("XEM KẾT QUẢ"):
-        st.balloons()
-        st.success(f"Chào {name}! Quẻ của bạn đang được gieo...")
+    st.header("📝 Nhập Thông Tin")
+    name = st.text_input("Họ và tên:")
+    dob = st.date_input("Ngày tháng năm sinh:")
+    btn_calc = st.button("Luận Giải Ngay")
+
+# --- KHU VỰC 2: HIỂN THỊ KẾT QUẢ ---
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    st.subheader("🔍 Kết Quả Phân Tích")
+    if btn_calc:
+        # Giả lập tính toán con số chủ đạo (Bạn thay logic thật vào đây)
+        result_num = (dob.day + dob.month + dob.year) % 9 or 9
+        
+        # Hiển thị nội dung
+        st.success(f"Chủ nhân: **{name}**")
+        st.info(f"Con số chủ đạo của bạn là: **Số {result_num}**")
+        st.write("Mô tả: Bạn là người có tố chất lãnh đạo và đầy sáng tạo...") # Thay bằng nội dung bạn muốn
+
+        # Nút "Like" để lưu kết quả
+        if st.button("❤️ Lưu vào danh sách yêu thích"):
+            new_entry = {"Tên": name, "Ngày sinh": str(dob), "Số chủ đạo": result_num}
+            st.session_state.saved_results.append(new_entry)
+            st.toast("Đã lưu kết quả thành công!")
+    else:
+        st.write("Vui lòng nhập thông tin ở thanh bên và nhấn nút để xem kết quả.")
+
+# --- KHU VỰC 3: LƯU KẾT QUẢ (LIKE) ---
+with col2:
+    st.subheader("⭐ Danh Sách Đã Lưu")
+    if st.session_state.saved_results:
+        # Chuyển danh sách thành DataFrame để hiển thị bảng cho đẹp
+        df = pd.DataFrame(st.session_state.saved_results)
+        st.dataframe(df, use_container_width=True)
+        
+        if st.button("Xóa tất cả"):
+            st.session_state.saved_results = []
+            st.rerun()
+    else:
+        st.caption("Chưa có kết quả nào được lưu.")
+
+st.markdown("---")
+st.caption("© 2026 - Ứng dụng phát triển bởi Gemini Thought Partner")
