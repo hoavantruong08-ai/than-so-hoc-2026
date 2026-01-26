@@ -3,60 +3,54 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 
-# 1. Cấu hình trang
-st.set_page_config(page_title="Thần Số Học Pro 2026", layout="wide")
+st.set_page_config(page_title="Thần Số Học Pro", layout="wide")
 
-# 2. Kết nối bằng cấu hình từ Secrets
+# Kết nối tự động qua Secrets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.title("🔮 Hệ Thống Luận Giải Thần Số Học")
+st.title("🔮 Hệ Thống Thần Số Học")
 
-# --- NHẬP LIỆU ---
 with st.sidebar:
     st.header("📝 Nhập Thông Tin")
     name = st.text_input("Họ và tên:")
     phone = st.text_input("Số điện thoại:")
-    dob = st.date_input("Ngày tháng năm sinh:")
-    btn_calc = st.button("Luận Giải Ngay")
+    dob = st.date_input("Ngày sinh:")
+    btn_calc = st.button("Luận Giải & Lưu")
 
-# --- HIỂN THỊ & LƯU ---
-col1, col2 = st.columns([1, 1])
+col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🔍 Kết Quả Phân Tích")
     if btn_calc and name:
         # Tính số chủ đạo đơn giản
         total = sum(int(i) for i in dob.strftime("%d%m%Y"))
         while total > 11 and total != 22:
             total = sum(int(digit) for digit in str(total))
         
-        st.success(f"Khách hàng: **{name}**")
-        st.info(f"Số chủ đạo: **{total}**")
+        st.success(f"Khách hàng: {name} - Số chủ đạo: {total}")
         
-        if st.button("❤️ Lưu lên Cloud"):
-            try:
-                # Đọc dữ liệu cũ
-                existing_data = conn.read()
-                # Tạo dòng mới
-                new_data = pd.DataFrame([{
-                    "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                    "Họ Tên": name,
-                    "Ngày Sinh": dob.strftime("%d/%m/%Y"),
-                    "Số Chủ Đạo": str(total),
-                    "Số Điện Thoại": phone
-                }])
-                # Cập nhật lên Sheet
-                updated_df = pd.concat([existing_data, new_data], ignore_index=True)
-                conn.update(data=updated_df)
-                st.toast("Đã lưu thành công!", icon="✅")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
+        try:
+            # Lấy dữ liệu hiện tại
+            existing_data = conn.read(ttl=0)
+            # Tạo dòng mới
+            new_row = pd.DataFrame([{
+                "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "Họ Tên": name,
+                "Ngày Sinh": dob.strftime("%d/%m/%Y"),
+                "Số Chủ Đạo": str(total),
+                "Số Điện Thoại": phone
+            }])
+            # Ghi vào Sheet
+            updated_df = pd.concat([existing_data, new_row], ignore_index=True)
+            conn.update(data=updated_df)
+            st.balloons() # Hiệu ứng chúc mừng khi lưu thành công
+            st.rerun()
+        except Exception as e:
+            st.error(f"Lỗi kết nối Sheet: {e}")
 
 with col2:
-    st.subheader("⭐ Danh Sách Đã Lưu")
+    st.subheader("⭐ Dữ liệu từ Google Sheets")
     try:
-        data = conn.read(ttl=0)
-        st.dataframe(data, use_container_width=True, hide_index=True)
+        df = conn.read(ttl=0)
+        st.dataframe(df, use_container_width=True)
     except:
-        st.write("Đang chờ dữ liệu...")
+        st.info("Chưa có dữ liệu hoặc lỗi kết nối.")
