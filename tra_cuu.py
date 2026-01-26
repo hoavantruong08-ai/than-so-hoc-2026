@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
+from datetime import datetime
 
 # --- CẤU HÌNH MẬT KHẨU KHÁCH HÀNG ---
 CLIENT_PASSWORD = "khachhang2026" 
@@ -45,35 +46,57 @@ st.write("Vui lòng nhập chính xác thông tin để xem kết quả.")
 
 with st.container():
     input_name = st.text_input("1. Nhập Họ và Tên của bạn:")
-    input_phone = st.text_input("2. Nhập Mã Số Của Bạn:")
+    input_phone = st.text_input("2. Nhập Số điện thoại của bạn:")
     btn_search = st.button("Tra cứu ngay")
 
 if btn_search:
     if input_name and input_phone:
         try:
-            # Đọc dữ liệu từ Google Sheets
+            # Đọc dữ liệu từ Sheet chính (giả sử sheet đầu tiên)
             df = conn.read(ttl=0)
             
-            # Xử lý chuẩn hóa dữ liệu để tìm kiếm (không phân biệt hoa thường)
-            # 1. Chuẩn hóa Họ Tên: bỏ khoảng trắng thừa và chuyển về chữ thường
+            # Chuẩn hóa dữ liệu tìm kiếm
             df['Họ Tên Tìm Kiếm'] = df['Họ Tên'].astype(str).str.strip().str.lower()
             name_query = input_name.strip().lower()
-            
-            # 2. Chuẩn hóa Số Điện Thoại: bỏ .0 và khoảng trắng
             df['SĐT Tìm Kiếm'] = df['Số Điện Thoại'].astype(str).str.replace(".0", "", regex=False).str.strip()
             phone_query = input_phone.strip()
             
-            # Tìm kiếm khớp cả 2 điều kiện
+            # Tìm kiếm
             result = df[(df['Họ Tên Tìm Kiếm'] == name_query) & (df['SĐT Tìm Kiếm'] == phone_query)]
             
             if not result.empty:
-                st.success(f"Chào bạn **{result.iloc[0]['Họ Tên']}**! Đây là kết quả của bạn:")
+                ho_ten_goc = result.iloc[0]['Họ Tên']
+                so_chu_dao = result.iloc[0]['Số Chủ Đạo']
+                ngay_sinh = result.iloc[0]['Ngày Sinh']
+                
+                st.success(f"Chào bạn **{ho_ten_goc}**! Đây là kết quả của bạn:")
                 st.markdown(f"""
                 <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
-                    <h2 style="margin:0;">Số Chủ Đạo: <span style="color: #ff4b4b;">{result.iloc[0]['Số Chủ Đạo']}</span></h2>
-                    <p style="font-size: 18px;">Ngày sinh: {result.iloc[0]['Ngày Sinh']}</p>
+                    <h2 style="margin:0;">Số Chủ Đạo: <span style="color: #ff4b4b;">{so_chu_dao}</span></h2>
+                    <p style="font-size: 18px;">Ngày sinh: {ngay_sinh}</p>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # --- PHẦN GHI LỊCH SỬ TRA CỨU ---
+                try:
+                    # Tạo dòng dữ liệu lịch sử mới
+                    history_entry = pd.DataFrame([{
+                        "Thời Gian Tra Cứu": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                        "Họ Tên": ho_ten_goc,
+                        "Số Điện Thoại": f"'{phone_query}",
+                        "Số Chủ Đạo": so_chu_dao,
+                        "Trạng Thái": "Thành công"
+                    }])
+                    
+                    # Đọc Sheet Lịch sử (nếu chưa có sẽ tự tạo bảng mới)
+                    # Lưu ý: Bạn nên tạo sẵn một Tab tên là 'History' trong file Google Sheets
+                    df_history = conn.read(worksheet="History", ttl=0)
+                    updated_history = pd.concat([df_history, history_entry], ignore_index=True)
+                    conn.update(worksheet="History", data=updated_history)
+                except:
+                    # Nếu chưa có sheet 'History', hệ thống sẽ vẫn chạy nhưng không lưu được lịch sử
+                    pass
+                
                 st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới!")
             else:
                 st.error("❌ Không tìm thấy thông tin phù hợp. Vui lòng kiểm tra lại Họ tên hoặc SĐT.")
