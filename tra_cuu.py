@@ -45,7 +45,7 @@ st.write("Vui lòng nhập chính xác thông tin để xem kết quả.")
 
 with st.container():
     input_name = st.text_input("1. Nhập Họ và Tên của bạn:")
-    input_phone = st.text_input("2. Nhập Số điện thoại của bạn:")
+    input_phone = st.text_input("2. Nhập Mã Số Của Bạn:")
     btn_search = st.button("Tra cứu ngay")
 
 if btn_search:
