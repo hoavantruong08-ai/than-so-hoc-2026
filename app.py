@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 # --- CẤU HÌNH MẬT KHẨU ---
-ADMIN_PASSWORD = "your_password_here"  # <--- THAY ĐỔI MẬT KHẨU CỦA BẠN TẠI ĐÂY
+ADMIN_PASSWORD = "Hanoi120643CB"  # <--- THAY ĐỔI MẬT KHẨU CỦA BẠN TẠI ĐÂY
 
 # Cấu hình trang
 st.set_page_config(page_title="Quản Trị Thần Số Học", layout="wide", page_icon="🔐")
@@ -132,3 +132,4 @@ with tab2:
         st.rerun()
     data = conn.read(ttl=0)
     st.dataframe(data, use_container_width=True, hide_index=True)
+
