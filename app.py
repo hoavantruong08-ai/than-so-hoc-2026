@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 # Kết nối tự động qua Secrets
-conn = st.connection("gsheets", type=GSheetsConnection)
+conn = st.connection("https://docs.google.com/spreadsheets/d/1zIkgqXFkF2QesVgbA5osCFgl6dnnY8lXr_JiZHzU1-c/edit?gid=0#gid=0", type=GSheetsConnection)
 
 st.title("🔮 Hệ Thống Thần Số Học Pro")
 
@@ -48,3 +48,4 @@ try:
     st.dataframe(data, use_container_width=True)
 except:
     st.info("Đang chờ dữ liệu...")
+
