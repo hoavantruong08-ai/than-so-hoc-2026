@@ -5,7 +5,7 @@ import pandas as pd
 # --- CẤU HÌNH MẬT KHẨU KHÁCH HÀNG ---
 CLIENT_PASSWORD = "khachhang2026" 
 
-# 1. CẤU HÌNH TRANG VÀ ẨN MENU QUẢN LÝ (QUAN TRỌNG)
+# 1. CẤU HÌNH TRANG VÀ ẨN MENU QUẢN LÝ
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
 hide_st_style = """
@@ -16,10 +16,11 @@ hide_st_style = """
             .stDeployButton {display:none;}
             #stDecoration {display:none;}
             [data-testid="stSidebarNav"] {display: none;}
-            /* Ẩn nút Manage App đối với người dùng */
-            .stAppDeployButton {display: none;}
-            div[data-testid="stStatusWidget"] {visibility: hidden;}
-            button[title="View source code"] {display: none;}
+            /* Đoạn quan trọng để ẩn nút Manage App */
+            div[data-testid="stStatusWidget"] {display: none;}
+            .stAppDeployButton {display: none !important;}
+            iframe[title="manage-app"] {display: none !important;}
+            button[data-testid="baseButton-secondary"] {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
