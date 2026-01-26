@@ -58,7 +58,7 @@ if st.button("Thoát hệ thống"):
     st.rerun()
 
 with st.container():
-    search_query = st.text_input("Nhập Số điện thoại của bạn:")
+    search_query = st.text_input("Bạn hãy nhập tên : Đào hoặc Lê:")
     btn_search = st.button("Tra cứu ngay")
 
 if btn_search:
