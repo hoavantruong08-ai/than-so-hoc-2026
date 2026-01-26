@@ -3,9 +3,22 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
 # --- CẤU HÌNH MẬT KHẨU KHÁCH HÀNG ---
-CLIENT_PASSWORD = "khachhang2026"  # <--- THAY ĐỔI MẬT KHẨU TRA CỨU TẠI ĐÂY
+CLIENT_PASSWORD = "khachhang2026" 
 
+# 1. CẤU HÌNH TRANG VÀ ẨN MENU QUẢN LÝ (QUAN TRỌNG)
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
+
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            .stDeployButton {display:none;}
+            #stDecoration {display:none;}
+            [data-testid="stSidebarNav"] {display: none;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # --- KIỂM TRA ĐĂNG NHẬP KHÁCH HÀNG ---
 if "client_auth" not in st.session_state:
@@ -28,12 +41,11 @@ if not st.session_state["client_auth"]:
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 st.title("🔍 Tra Cứu Kết Quả Thần Số Học")
-st.write("Chào mừng bạn! Hãy nhập thông tin bên dưới để xem kết quả.")
 
-with st.sidebar:
-    if st.button("Thoát hệ thống"):
-        st.session_state["client_auth"] = False
-        st.rerun()
+# Nút thoát nằm gọn gàng ở góc
+if st.button("Thoát hệ thống"):
+    st.session_state["client_auth"] = False
+    st.rerun()
 
 with st.container():
     search_query = st.text_input("Nhập Số điện thoại của bạn:")
@@ -41,26 +53,25 @@ with st.container():
 
 if btn_search:
     if search_query:
-        df = conn.read(ttl=0)
-        # Chuyển đổi SĐT về dạng chuỗi để tìm kiếm khớp hoàn toàn
-        df['Số Điện Thoại'] = df['Số Điện Thoại'].astype(str).str.replace(".0", "", regex=False).str.strip()
-        search_query = search_query.strip()
-        
-        result = df[df['Số Điện Thoại'] == search_query]
-        
-        if not result.empty:
-            st.success(f"Chào bạn **{result.iloc[0]['Họ Tên']}**! Đây là kết quả của bạn:")
+        try:
+            df = conn.read(ttl=0)
+            df['Số Điện Thoại'] = df['Số Điện Thoại'].astype(str).str.replace(".0", "", regex=False).str.strip()
+            search_query = search_query.strip()
             
-            # Hiển thị kết quả dạng Card
-            st.markdown(f"""
-            <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
-                <h2 style="margin:0;">Số Chủ Đạo: <span style="color: #ff4b4b;">{result.iloc[0]['Số Chủ Đạo']}</span></h2>
-                <p style="font-size: 18px;">Ngày sinh: {result.iloc[0]['Ngày Sinh']}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            result = df[df['Số Điện Thoại'] == search_query]
             
-            st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới của bạn!")
-        else:
-            st.error("Chưa tìm thấy dữ liệu cho số điện thoại này. Vui lòng kiểm tra lại hoặc liên hệ Admin.")
+            if not result.empty:
+                st.success(f"Chào bạn **{result.iloc[0]['Họ Tên']}**! Đây là kết quả của bạn:")
+                st.markdown(f"""
+                <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
+                    <h2 style="margin:0;">Số Chủ Đạo: <span style="color: #ff4b4b;">{result.iloc[0]['Số Chủ Đạo']}</span></h2>
+                    <p style="font-size: 18px;">Ngày sinh: {result.iloc[0]['Ngày Sinh']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới của bạn!")
+            else:
+                st.error("Chưa tìm thấy dữ liệu cho số điện thoại này.")
+        except:
+            st.error("Lỗi kết nối dữ liệu. Vui lòng báo Admin dán lại Secrets.")
     else:
-        st.warning("Vui lòng nhập số điện thoại để tra cứu.")
+        st.warning("Vui lòng nhập số điện thoại.")
