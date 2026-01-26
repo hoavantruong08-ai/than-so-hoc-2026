@@ -16,6 +16,10 @@ hide_st_style = """
             .stDeployButton {display:none;}
             #stDecoration {display:none;}
             [data-testid="stSidebarNav"] {display: none;}
+            /* Ẩn nút Manage App đối với người dùng */
+            .stAppDeployButton {display: none;}
+            div[data-testid="stStatusWidget"] {visibility: hidden;}
+            button[title="View source code"] {display: none;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
