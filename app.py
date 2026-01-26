@@ -3,14 +3,16 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 
-# Cấu hình trang
-st.set_page_config(page_title="Thần Số Học 2026", layout="wide", page_icon="🔮")
+# 1. Cấu hình trang
+st.set_page_config(page_title="Thần Số Học 2026", layout="wide")
 
+# 2. Kết nối Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
+# 3. Hàm tính Số Chủ Đạo
 def tinh_so_chu_dao(ngay_sinh_val):
     if pd.isna(ngay_sinh_val): return ""
-    # Chuyển mọi định dạng về chuỗi số
+    # Chuyển đổi mọi định dạng ngày về chuỗi số sạch
     s = str(ngay_sinh_val).replace("/", "").replace("-", "").split()[0]
     digits = "".join(filter(str.isdigit, s))
     if not digits: return ""
@@ -22,25 +24,24 @@ def tinh_so_chu_dao(ngay_sinh_val):
     except:
         return ""
 
+# 4. Giao diện Sidebar
+with st.sidebar:
+    st.title("🔮 Quản Trị")
+    mode = st.radio("Chọn phương thức nhập:", ["Nhập thủ công", "Upload File Excel"])
+
 st.title("🔮 Hệ Thống Thần Số Học")
 
-# Sidebar quản lý
-with st.sidebar:
-    st.header("Menu Quản Trị")
-    mode = st.radio("Chọn hình thức:", ["Nhập đơn lẻ", "Upload file Excel/CSV"])
-    st.divider()
-    st.info("Lưu ý: File upload nên có các cột: Họ Tên, Ngày Sinh, Số Điện Thoại.")
-
-tab1, tab2 = st.tabs(["📥 Nhập Dữ Liệu", "📂 Kho Dữ Liệu Sheets"])
+tab1, tab2 = st.tabs(["📥 Nhập Dữ Liệu", "📂 Kho Lưu Trữ"])
 
 with tab1:
-    if mode == "Nhập đơn lẻ":
-        with st.form("form_nhap"):
+    if mode == "Nhập thủ công":
+        with st.form("form_le"):
             col1, col2 = st.columns(2)
             name = col1.text_input("Họ tên:")
             phone = col2.text_input("Số điện thoại:")
             dob = st.date_input("Ngày sinh:")
-            if st.form_submit_button("Lưu hệ thống"):
+            
+            if st.form_submit_button("Lưu lên hệ thống"):
                 if name and phone:
                     so = tinh_so_chu_dao(dob)
                     new_row = pd.DataFrame([{
@@ -52,47 +53,40 @@ with tab1:
                     }])
                     df_old = conn.read(ttl=0).astype(str)
                     conn.update(data=pd.concat([df_old, new_row], ignore_index=True))
-                    st.success(f"Đã lưu khách hàng {name}!")
-    
+                    st.success(f"✅ Đã lưu: {name}")
+
     else:
-        st.subheader("🚀 Upload file danh sách")
-        up_file = st.file_uploader("Kéo thả file Excel (.xlsx) hoặc CSV vào đây", type=["csv", "xlsx"])
+        st.subheader("🚀 Tải lên danh sách từ Excel")
+        up_file = st.file_uploader("Kéo thả file .xlsx vào đây", type=["xlsx"])
         
         if up_file:
             try:
-                # Đọc file (Sửa lỗi Missing dependency)
-                df_upload = pd.read_excel(up_file, engine='openpyxl') if up_file.name.endswith('xlsx') else pd.read_csv(up_file)
+                # Đọc file với engine openpyxl đã cài ở bước 1
+                df_upload = pd.read_excel(up_file, engine='openpyxl')
+                st.write("🔍 Xem trước dữ liệu từ file:")
+                st.dataframe(df_upload.head(10), use_container_width=True)
                 
-                st.write("🔍 **Dữ liệu trong file của bạn:**")
-                st.dataframe(df_upload, use_container_width=True)
-                
-                if st.button("Xử lý và Đồng bộ lên Cloud"):
-                    with st.spinner("Đang xử lý dữ liệu..."):
-                        # Chuẩn hóa tên cột để khớp với Sheets của bạn
-                        # Giả sử file upload có cột 'Họ Tên', 'Ngày Sinh', 'Số Điện Thoại'
+                if st.button("🔥 Xác nhận đồng bộ lên Google Sheets"):
+                    with st.spinner("Đang xử lý..."):
+                        # Tự động tính Số Chủ Đạo nếu cột đó đang trống trong file
                         df_upload["Số Chủ Đạo"] = df_upload["Ngày Sinh"].apply(tinh_so_chu_dao)
-                        df_upload["Thời Gian"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        if "Thời Gian" not in df_upload.columns:
+                            df_upload["Thời Gian"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         
-                        # Chỉ lấy các cột cần thiết theo đúng thứ tự file Excel của bạn
-                        cols_to_keep = ["Thời Gian", "Họ Tên", "Ngày Sinh", "Số Chủ Đạo", "Số Điện Thoại"]
-                        # Nếu file upload thiếu cột nào thì tự thêm cột trống
-                        for c in cols_to_keep:
-                            if c not in df_upload.columns: df_upload[c] = ""
-                            
-                        final_upload = df_upload[cols_to_keep]
+                        # Đọc data cũ và gộp lại
+                        df_old = conn.read(ttl=0).astype(str)
+                        # Đảm bảo định dạng string để tránh lỗi merge
+                        df_upload = df_upload.astype(str)
+                        updated_df = pd.concat([df_old, df_upload], ignore_index=True)
                         
-                        # Ghi đè hoặc nối thêm vào Sheets
-                        current_db = conn.read(ttl=0).astype(str)
-                        updated_db = pd.concat([current_db, final_upload], ignore_index=True)
-                        conn.update(data=updated_db)
-                        
-                        st.success(f"✅ Đã tải lên thành công {len(final_upload)} dòng dữ liệu!")
+                        conn.update(data=updated_df)
+                        st.success(f"✅ Thành công! Đã tải lên {len(df_upload)} khách hàng.")
                         st.balloons()
             except Exception as e:
-                st.error(f"Lỗi: {e}")
+                st.error(f"❌ Lỗi xử lý file: {e}")
 
 with tab2:
-    if st.button("🔄 Làm mới dữ liệu từ Sheets"):
+    if st.button("🔄 Làm mới danh sách"):
         st.cache_data.clear()
-    data_cloud = conn.read(ttl=0)
-    st.dataframe(data_cloud, use_container_width=True)
+    data = conn.read(ttl=0)
+    st.dataframe(data, use_container_width=True)
