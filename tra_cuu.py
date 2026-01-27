@@ -5,58 +5,78 @@ import unicodedata
 import re
 from datetime import datetime, timedelta
 
-# --- CẤU HÌNH ---
-CLIENT_PASSWORD = "khachhang2026" 
+# --- 1. CẤU HÌNH & ẨN MENU QUẢN LÝ ---
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
+# CSS mạnh để ẩn sạch các thanh công cụ và nút Manage
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
+    [data-testid="stToolbar"] {display: none;}
+    [data-testid="stDecoration"] {display: none;}
+    .stAppDeployButton {display: none !important;}
+    iframe[title="Manage app"] {display: none !important;}
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
     if not text or str(text) == "nan": return ""
-    s = str(text).split('.')[0] 
+    s = str(text).split('.')[0].strip()
     s = unicodedata.normalize('NFD', s)
     s = ''.join([c for c in s if unicodedata.category(c) != 'Mn'])
     s = s.replace('đ', 'd').replace('Đ', 'D')
-    return re.sub(r'[^a-zA-Z0-9]', '', s).lower()
+    s = re.sub(r'[^a-zA-Z0-9]', '', s).lower()
+    if s.isdigit() and len(s) == 7:
+        s = "0" + s
+    return s
 
+# --- 3. ĐĂNG NHẬP ---
 if "client_auth" not in st.session_state:
     st.session_state["client_auth"] = False
 
 if not st.session_state["client_auth"]:
-    st.title("🔮 Cổng Tra Cứu")
+    st.title("🔮 Cổng Tra Cứu Thần Số Học")
     pwd = st.text_input("Mật khẩu:", type="password")
     if st.button("Truy cập"):
-        if pwd == CLIENT_PASSWORD:
+        if pwd == "khachhang2026":
             st.session_state["client_auth"] = True
             st.rerun()
+        else:
+            st.error("Mật khẩu không đúng")
     st.stop()
 
-# --- TRA CỨU ---
-st.title("🔍 Tra Cứu Thần Số Học")
+# --- 4. TRA CỨU & GHI LỊCH SỬ ---
+st.title("🔍 Tra Cứu Kết Quả")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-name_in = st.text_input("Họ và Tên (Mặc định viết thường):")
-dob_in = st.text_input("Ngày tháng năm sinh (Ví dụ: 26031990):")
+name_in = st.text_input("Họ và Tên (viết thường):")
+dob_in = st.text_input("Mã Ngày Sinh (Ví dụ: 02091997):")
 
 if st.button("Tra cứu ngay"):
     if name_in and dob_in:
         try:
-            # 1. Đọc dữ liệu từ tab nguồn (giả định tab 1 là Up_Data)
+            # Đọc dữ liệu từ tab đầu tiên (mặc định là Up_Data)
             df = conn.read(ttl=0)
             
-            df['name_match'] = df.iloc[:, 0].apply(clean_id)
-            df['dob_match'] = df.iloc[:, 1].apply(clean_id)
+            df['n_match'] = df.iloc[:, 0].apply(clean_id)
+            df['d_match'] = df.iloc[:, 1].apply(clean_id)
             
             s_name = clean_id(name_in)
             s_dob = clean_id(dob_in)
             
-            match = df[(df['name_match'] == s_name) & (df['dob_match'] == s_dob)]
+            match = df[(df['n_match'] == s_name) & (df['d_match'] == s_dob)]
             
             if not match.empty:
                 res_full_name = match.iloc[0, 0]
-                st.success(f"Kết quả cho: **{res_full_name}**")
+                st.success(f"Chào bạn **{res_full_name}**!")
                 
                 c1, c2 = st.columns(2)
-                scd = clean_id(match.iloc[0, 3]).upper()
-                sdm = clean_id(match.iloc[0, 4]).upper()
+                scd = str(match.iloc[0, 3]).split('.')[0]
+                sdm = str(match.iloc[0, 4]).split('.')[0]
                 c1.metric("Số Chủ Đạo", scd)
                 c2.metric("Số Định Mệnh", sdm)
 
