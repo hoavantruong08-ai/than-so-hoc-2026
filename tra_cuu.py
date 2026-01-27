@@ -6,11 +6,37 @@ import re
 from datetime import datetime, timedelta
 
 # --- 1. CẤU HÌNH & CSS GIAO DIỆN ---
-st.set_page_config(
-    page_title="Tra Cứu Thần Số Học VIP",
-    page_icon="🔮",
-    layout="centered",
-    initial_sidebar_state="expanded"
+import streamlit as st
+
+st.markdown(
+    """
+    <style>
+    /* 1. Ẩn nút 'Manage app' màu đen ở góc dưới bên phải (chỉ có ở phía Admin) */
+    div[data-testid="stStatusWidget"] {
+        visibility: hidden;
+        height: 0%;
+        position: fixed;
+    }
+
+    /* 2. Ẩn thanh công cụ phía trên (Share, Star, GitHub, Fork) */
+    header[data-testid="stHeader"] {
+        visibility: hidden;
+        height: 0%;
+    }
+
+    /* 3. QUAN TRỌNG: Đảm bảo không ẩn các nút tùy chỉnh của bạn */
+    /* Nếu các nút đỏ/vàng của bạn nằm trong footer mặc định, ta chỉ ẩn chữ thôi */
+    footer {
+        visibility: hidden;
+    }
+    
+    /* 4. Ép các thành phần nội dung chính không bị đẩy xuống */
+    .block-container {
+        padding-top: 2rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
 # Biến cấu hình (BẠN HÃY THAY ĐỔI LINK CỦA BẠN Ở ĐÂY)
