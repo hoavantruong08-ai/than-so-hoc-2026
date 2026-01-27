@@ -71,49 +71,65 @@ if menu == "Tra cứu":
             c1, c2 = st.columns(2)
             c1.metric("Số Chủ Đạo", str(match.iloc[0, 3]).split('.')[0])
             c2.metric("Số Định Mệnh", str(match.iloc[0, 4]).split('.')[0])
-            # Ghi History
+            # Ghi History sử dụng phương thức an toàn
             try:
                 hist_df = conn.read(worksheet="History", ttl=0)
                 new_log = pd.DataFrame([{"Thời Gian Tra Cứu": (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S"), "Họ Và Tên": match.iloc[0, 0], "Ngày Sinh": f"'{clean_id(d_in)}", "Trạng Thái": "Thành công"}])
-                conn.update(worksheet="History", data=pd.concat([hist_df, new_log], ignore_index=True))
+                conn.create(worksheet="History", data=pd.concat([hist_df, new_log], ignore_index=True))
             except: pass
         else: st.error("Không tìm thấy dữ liệu!")
 
-# --- 5. TRANG QUẢN LÝ DỮ LIỆU NGUỒN (LỖI Ở ĐÂY - ĐÃ FIX) ---
+# --- 5. TRANG QUẢN LÝ DỮ LIỆU NGUỒN (ĐÃ FIX TRIỆT ĐỂ LỖI GHI) ---
 elif menu == "Quản lý Up_Data":
     st.title("📂 Cập Nhật Dữ Liệu Nguồn")
     conn = st.connection("gsheets", type=GSheetsConnection)
     
-    # Khu vực thêm mới
-    with st.expander("➕ Thêm khách hàng mới vào Sheet", expanded=True):
-        with st.form("form_add"):
+    with st.expander("➕ Thêm khách hàng mới", expanded=True):
+        with st.form("form_add_new"):
             c1, c2 = st.columns(2)
             name = c1.text_input("Họ Tên khách:")
             dob = c2.text_input("Mã Ngày sinh (8 số):")
             phone = c1.text_input("SĐT:")
             scd = c2.text_input("Số Chủ Đạo:")
             sdm = st.text_input("Số Định Mệnh:")
-            btn = st.form_submit_button("Lưu dữ liệu")
+            btn = st.form_submit_button("Lưu vào Google Sheets")
             
         if btn:
             if name and dob:
                 try:
+                    # Đọc dữ liệu cũ
                     df_old = conn.read(worksheet="Up_Data", ttl=0)
-                    new_data = pd.DataFrame([{"Họ Tên": name, "Ngày Sinh": f"'{dob}", "SĐT": phone, "Số Chủ Đạo": scd, "Số Định Mệnh": sdm}])
-                    # Sử dụng .update để ghi đè bảng mới đã cộng dồn
-                    conn.update(worksheet="Up_Data", data=pd.concat([df_old, new_data], ignore_index=True))
-                    st.success(f"Đã lưu: {name}")
+                    # Tạo dòng mới
+                    new_row = pd.DataFrame([{
+                        "Họ Tên": str(name), 
+                        "Ngày Sinh": f"'{str(dob)}", 
+                        "SĐT": str(phone), 
+                        "Số Chủ Đạo": str(scd), 
+                        "Số Định Mệnh": str(sdm)
+                    }])
+                    # Gộp và Ghi đè bằng hàm .create (Hàm này ổn định nhất hiện nay)
+                    df_final = pd.concat([df_old, new_row], ignore_index=True)
+                    conn.create(worksheet="Up_Data", data=df_final)
+                    st.success(f"Đã lưu thành công khách hàng: {name}")
+                    st.rerun()
                 except Exception as e:
-                    st.error(f"Lỗi ghi dữ liệu: {e}. Kiểm tra lại quyền Editor của Sheet.")
-            else: st.warning("Vui lòng điền Tên và Ngày sinh.")
+                    st.error(f"Lỗi ghi dữ liệu: {e}")
+            else:
+                st.warning("Vui lòng điền Tên và Ngày sinh.")
 
-    # Hiển thị danh sách hiện có
-    st.subheader("Danh sách khách hàng hiện tại")
-    df_src = conn.read(worksheet="Up_Data", ttl=0)
-    st.dataframe(df_src, use_container_width=True)
+    st.subheader("Danh sách hiện tại")
+    try:
+        df_src = conn.read(worksheet="Up_Data", ttl=0)
+        st.dataframe(df_src, use_container_width=True)
+    except:
+        st.info("Chưa có dữ liệu để hiển thị.")
 
 # --- 6. NHẬT KÝ ---
 elif menu == "Nhật ký History":
     st.title("📋 Lịch Sử Hệ Thống")
     conn = st.connection("gsheets", type=GSheetsConnection)
-    st.dataframe(conn.read(worksheet="History", ttl=0).sort_index(ascending=False), use_container_width=True)
+    try:
+        df_h = conn.read(worksheet="History", ttl=0)
+        st.dataframe(df_h.sort_index(ascending=False), use_container_width=True)
+    except:
+        st.info("Chưa có lịch sử tra cứu.")
