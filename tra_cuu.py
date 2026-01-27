@@ -16,7 +16,7 @@ st.set_page_config(
 # Biến cấu hình
 APP_URL = "https://share.streamlit.io/..." 
 ADMIN_ZALO = "0909000xxx" 
-ADMIN_EMAIL = "admin@qungluu.com"
+ADMIN_EMAIL = "admin@quangluu.com"
 ADMIN_PHONE = "0909.000.xxx"
 
 # CSS tùy chỉnh
