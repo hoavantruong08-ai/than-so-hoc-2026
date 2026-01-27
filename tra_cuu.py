@@ -10,46 +10,34 @@ st.set_page_config(
     page_title="Tra Cứu Thần Số Học VIP",
     page_icon="🔮",
     layout="centered",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" # Ép hiện sidebar khi mới vào
 )
 
-# Biến cấu hình
-APP_URL = "https://than-so-hoc-2026-khachhang.streamlit.app" 
-ADMIN_ZALO = "0909000xxx" 
-ADMIN_EMAIL = "admin@thansohoc.com"
-ADMIN_PHONE = "0909.000.xxx"
-
-# --- CSS ĐÃ SỬA: CHỈ ẨN NÚT MANAGE APP & GIỮ NGUYÊN TÁC VỤ ---
+# CSS MỚI: HIỆN SIDEBAR - ẨN MANAGE APP
 st.markdown("""
     <style>
-    /* 1. KHÔNG ẩn MainMenu, header hay footer để giữ các tác vụ admin */
-    #MainMenu {visibility: visible;}
-    header {visibility: visible;}
-    
-    /* 2. CHỈ ẨN NÚT "MANAGE APP" VÀ LOGO STREAMLIT GÓC DƯỚI BÊN PHẢI */
-    /* Nhắm vào nút Manage App màu đen */
-    div[data-testid="stStatusWidget"] {
-        display: none !important;
-    }
-
-    /* Nhắm vào nút Hosted with Streamlit màu đỏ/trắng */
-    .viewerBadge_container__1QSob, 
-    .viewerBadge_link__1S137,
-    [class*="viewerBadge"] {
-        display: none !important;
-    }
-
-    /* Loại bỏ khoảng trống thừa ở cuối trang do các nút này để lại */
-    footer {
-        display: none !important;
-    }
-
-    /* 3. Đảm bảo Sidebar (Tác vụ) luôn hiện ở cả 2 bên */
-    [data-testid="stSidebar"] {
+    /* 1. HIỆN LẠI HEADER VÀ THANH TÁC VỤ (SHARE, STAR, GITHUB) */
+    header[data-testid="stHeader"] {
+        visibility: visible !important;
         display: flex !important;
     }
 
-    /* Giữ nguyên card kết quả của bạn */
+    /* 2. ÉP HIỆN SIDEBAR TRÊN MỌI THIẾT BỊ (ĐỂ KHÁCH THẤY CÁC NÚT) */
+    [data-testid="stSidebar"] {
+        left: 0 !important;
+        visibility: visible !important;
+        display: flex !important;
+    }
+
+    /* 3. CHỈ ẨN DUY NHẤT NÚT MANAGE APP VÀ NÚT ĐỎ GÓC DƯỚI */
+    div[data-testid="stStatusWidget"], 
+    .stAppToolbar, 
+    footer,
+    div[class*="viewerBadge"] {
+        display: none !important;
+    }
+
+    /* Giữ nguyên các class làm đẹp của bạn */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
