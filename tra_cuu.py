@@ -4,32 +4,29 @@ import pandas as pd
 import unicodedata
 import re
 from datetime import datetime, timedelta
-
-# --- 1. CẤU HÌNH & CSS GIAO DIỆN ---
+# --- 1. CẤU HÌNH GIAO DIỆN ---
 st.set_page_config(
     page_title="Tra Cứu Thần Số Học VIP",
     page_icon="🔮",
     layout="centered",
-    initial_sidebar_state="expanded" # Ép hiện sidebar khi mới vào
+    initial_sidebar_state="expanded" 
 )
 
-# CSS MỚI: HIỆN SIDEBAR - ẨN MANAGE APP
+# --- CSS SỬA LỖI: HIỆN TÁC VỤ - ẨN MANAGE APP ---
 st.markdown("""
     <style>
-    /* 1. HIỆN LẠI HEADER VÀ THANH TÁC VỤ (SHARE, STAR, GITHUB) */
+    /* 1. HIỆN LẠI SIDEBAR VÀ HEADER (Đã bị ẩn ở các bản trước) */
     header[data-testid="stHeader"] {
         visibility: visible !important;
         display: flex !important;
     }
-
-    /* 2. ÉP HIỆN SIDEBAR TRÊN MỌI THIẾT BỊ (ĐỂ KHÁCH THẤY CÁC NÚT) */
-    [data-testid="stSidebar"] {
-        left: 0 !important;
+    
+    section[data-testid="stSidebar"] {
         visibility: visible !important;
         display: flex !important;
     }
 
-    /* 3. CHỈ ẨN DUY NHẤT NÚT MANAGE APP VÀ NÚT ĐỎ GÓC DƯỚI */
+    /* 2. CHỈ ẨN DUY NHẤT NÚT MANAGE APP VÀ NÚT ĐỎ GÓC DƯỚI */
     div[data-testid="stStatusWidget"], 
     .stAppToolbar, 
     footer,
@@ -37,7 +34,7 @@ st.markdown("""
         display: none !important;
     }
 
-    /* Giữ nguyên các class làm đẹp của bạn */
+    /* 3. LÀM ĐẸP CARD KẾT QUẢ (GIỮ NGUYÊN LOGIC CỦA BẠN) */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -46,9 +43,13 @@ st.markdown("""
         text-align: center;
         margin-bottom: 20px;
     }
+    .big-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ff4b4b;
+    }
     </style>
     """, unsafe_allow_html=True)
-
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
     if not text or str(text) == "nan": return ""
