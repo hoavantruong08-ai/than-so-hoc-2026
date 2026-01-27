@@ -10,7 +10,7 @@ st.set_page_config(
     page_icon="🔮",
     layout="centered",
     initial_sidebar_state="expanded" 
-)
+   )
 
 # --- CSS SỬA LỖI: HIỆN TÁC VỤ - ẨN MANAGE APP ---
 st.markdown("""
