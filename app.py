@@ -1,135 +1,134 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-from datetime import datetime
+import unicodedata
+import re
+from datetime import datetime, timedelta
 
-# --- CẤU HÌNH MẬT KHẨU ---
-ADMIN_PASSWORD = "Hanoi120643CB"  # <--- THAY ĐỔI MẬT KHẨU CỦA BẠN TẠI ĐÂY
+# --- 1. CẤU HÌNH & ẨN MENU QUẢN LÝ ---
+st.set_page_config(page_title="Hệ Thống Thần Số Học 2026", page_icon="🔮", layout="wide")
 
-# Cấu hình trang
-st.set_page_config(page_title="Quản Trị Thần Số Học", layout="wide", page_icon="🔐")
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            .stDeployButton {display:none;}
+            [data-testid="stToolbar"] {display: none;}
+            .stAppDeployButton {display: none !important;}
+            iframe[title="Manage app"] {display: none !important;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# --- KIỂM TRA ĐĂNG NHẬP ---
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+# --- 2. HÀM HỖ TRỢ ---
+def clean_id(text):
+    if not text or str(text) == "nan": return ""
+    s = str(text).split('.')[0].strip()
+    s = unicodedata.normalize('NFD', s)
+    s = ''.join([c for c in s if unicodedata.category(c) != 'Mn'])
+    s = s.replace('đ', 'd').replace('Đ', 'D')
+    s = re.sub(r'[^a-zA-Z0-9]', '', s).lower()
+    if s.isdigit() and len(s) == 7:
+        s = "0" + s
+    return s
 
-if not st.session_state["authenticated"]:
-    st.title("🔐 Hệ Thống Quản Trị Bảo Mật")
-    pwd_input = st.text_input("Nhập mật khẩu Admin để tiếp tục:", type="password")
-    if st.button("Đăng nhập"):
-        if pwd_input == ADMIN_PASSWORD:
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else:
-            st.error("❌ Mật khẩu không chính xác!")
-    st.stop() # Dừng app tại đây nếu chưa đăng nhập
+# --- 3. ĐIỀU HƯỚNG MENU (Sidebar ẩn) ---
+if "role" not in st.session_state:
+    st.session_state["role"] = None
 
-# --- NỘI DUNG APP SAU KHI ĐĂNG NHẬP ---
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-def tinh_so_chu_dao(ngay_sinh_val):
-    if pd.isna(ngay_sinh_val): return "N/A"
-    if isinstance(ngay_sinh_val, (datetime, pd.Timestamp)):
-        digits = ngay_sinh_val.strftime("%d%m%Y")
-    else:
-        str_val = str(ngay_sinh_val).split(' ')[0]
-        digits = "".join(filter(str.isdigit, str_val))
-    if not digits: return "N/A"
-    try:
-        total = sum(int(i) for i in digits)
-        while total > 11 and total != 22:
-            total = sum(int(digit) for digit in str(total))
-        return total
-    except: return "N/A"
-
-def find_default_index(column_list, keywords):
-    for i, name in enumerate(column_list):
-        if any(key.lower() in str(name).lower() for key in keywords):
-            return i
-    return 0
-
-# --- SIDEBAR ---
+# Sidebar để chuyển đổi (Chỉ hiện khi đã đăng nhập Admin)
 with st.sidebar:
-    st.title("⚙️ Quản Trị")
-    if st.button("Đăng xuất"):
-        st.session_state["authenticated"] = False
-        st.rerun()
-    st.divider()
-    mode = st.radio("Chế độ nhập liệu:", ["Nhập đơn lẻ", "Upload danh sách"])
-
-# --- MAIN ---
-st.title("🔮 Hệ Thống Thần Số Học (Admin)")
-
-tab1, tab2 = st.tabs(["✨ Xử Lý Dữ Liệu", "📊 Kho Lưu Trữ"])
-
-with tab1:
-    if mode == "Nhập đơn lẻ":
-        with st.form("single_input"):
-            col1, col2 = st.columns(2)
-            name = col1.text_input("Họ tên:")
-            phone = col2.text_input("Số điện thoại:")
-            dob = st.date_input("Ngày sinh:", min_value=datetime(1950, 1, 1), format="DD/MM/YYYY")
-            submit = st.form_submit_button("Tính & Lưu")
-            
-            if submit and name and phone:
-                so = tinh_so_chu_dao(dob)
-                new_data = pd.DataFrame([{
-                    "Thời Gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                    "Họ Tên": name,
-                    "Ngày Sinh": dob.strftime("%d/%m/%Y"),
-                    "Số Chủ Đạo": str(so),
-                    "Số Điện Thoại": f"'{phone}"
-                }])
-                df_old = conn.read(ttl=0).astype(str)
-                updated_df = pd.concat([df_old, new_data], ignore_index=True)
-                conn.update(data=updated_df)
-                st.success(f"Đã lưu: {name} - Số chủ đạo: {so}")
-
+    if st.session_state["role"] == "admin":
+        st.title("⚡ Quản Trị")
+        page = st.radio("Chọn chức năng:", ["Tra cứu (Khách)", "Dữ liệu nguồn (Admin)", "Lịch sử tra cứu"])
+        if st.button("Đăng xuất Admin"):
+            st.session_state["role"] = None
+            st.rerun()
     else:
-        st.subheader("📁 Tải file lên hệ thống")
-        uploaded_file = st.file_uploader("Chọn file Excel (.xlsx) hoặc CSV", type=["csv", "xlsx"])
-        
-        if uploaded_file:
-            try:
-                if uploaded_file.name.endswith('.csv'):
-                    input_df = pd.read_csv(uploaded_file)
-                else:
-                    input_df = pd.read_excel(uploaded_file, engine='openpyxl')
-                
-                st.dataframe(input_df.head(5), use_container_width=True)
-                st.divider()
-                cols = input_df.columns.tolist()
-                c1, c2, c3 = st.columns(3)
-                
-                idx_name = find_default_index(cols, ["họ tên", "tên", "name"])
-                idx_dob = find_default_index(cols, ["ngày sinh", "dob", "birthday"])
-                idx_phone = find_default_index(cols, ["điện thoại", "phone", "sđt"])
+        page = "Tra cứu (Khách)"
 
-                col_name = c1.selectbox("Cột Họ Tên", cols, index=idx_name)
-                col_dob = c2.selectbox("Cột Ngày Sinh", cols, index=idx_dob)
-                col_phone = c3.selectbox("Cột Số Điện Thoại", cols, index=idx_phone)
+# --- 4. TRANG TRA CỨU CHO KHÁCH ---
+if page == "Tra cứu (Khách)":
+    st.title("🔮 Cổng Tra Cứu Thần Số Học")
+    
+    # Đăng nhập khách (nếu chưa có role)
+    if st.session_state["role"] is None:
+        pwd = st.text_input("Nhập mật khẩu truy cập:", type="password")
+        col_btn1, col_btn2 = st.columns(2)
+        if col_btn1.button("Vào Tra Cứu"):
+            if pwd == "khachhang2026":
+                st.session_state["role"] = "user"
+                st.rerun()
+            elif pwd == "admin2026": # MẬT KHẨU ADMIN RIÊNG
+                st.session_state["role"] = "admin"
+                st.rerun()
+            else:
+                st.error("Sai mật khẩu!")
+        st.stop()
 
-                if st.button("🪄 Xử lý & Đẩy lên Google Sheets", type="primary"):
-                    with st.spinner("Đang xử lý..."):
-                        processed_df = input_df[[col_name, col_dob, col_phone]].copy()
-                        processed_df.columns = ["Họ Tên", "Ngày Sinh", "Số Điện Thoại"]
-                        processed_df["Số Chủ Đạo"] = processed_df["Ngày Sinh"].apply(tinh_so_chu_dao)
-                        processed_df["Ngày Sinh"] = processed_df["Ngày Sinh"].apply(lambda x: pd.to_datetime(x).strftime("%d/%m/%Y") if pd.notnull(x) else "")
-                        processed_df["Thời Gian"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                        processed_df["Số Điện Thoại"] = processed_df["Số Điện Thoại"].astype(str)
-                        
-                        df_old = conn.read(ttl=0).astype(str)
-                        final_df = pd.concat([df_old, processed_df], ignore_index=True)
-                        conn.update(data=final_df)
-                        st.success(f"✅ Đã thêm {len(processed_df)} khách hàng!")
-                        st.balloons()
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
+    # Giao diện tra cứu
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    with st.form("search_form"):
+        name_in = st.text_input("Họ và Tên (viết thường):")
+        dob_in = st.text_input("Mã Ngày Sinh (Ví dụ: 02091997):")
+        submitted = st.form_submit_button("Tra cứu ngay")
 
-with tab2:
-    if st.button("🔄 Tải lại dữ liệu"):
-        st.cache_data.clear()
+    if submitted:
+        try:
+            df = conn.read(ttl=0)
+            df['n_match'] = df.iloc[:, 0].apply(clean_id)
+            df['d_match'] = df.iloc[:, 1].apply(clean_id)
+            s_name, s_dob = clean_id(name_in), clean_id(dob_in)
+            
+            match = df[(df['n_match'] == s_name) & (df['d_match'] == s_dob)]
+            
+            if not match.empty:
+                st.balloons()
+                st.success(f"Chào bạn **{match.iloc[0, 0]}**!")
+                c1, c2 = st.columns(2)
+                scd = str(match.iloc[0, 3]).split('.')[0]
+                sdm = str(match.iloc[0, 4]).split('.')[0]
+                c1.metric("Số Chủ Đạo", scd)
+                c2.metric("Số Định Mệnh", sdm)
+
+                # Ghi History
+                try:
+                    now_vn = (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S")
+                    history_df = conn.read(worksheet="History", ttl=0)
+                    new_log = pd.DataFrame([{"Thời Gian Tra Cứu": now_vn, "Họ Và Tên": match.iloc[0, 0], "Ngày Sinh": f"'{s_dob}", "Trạng Thái": "Thành công"}])
+                    conn.create(worksheet="History", data=pd.concat([history_df, new_log], ignore_index=True))
+                except: pass
+            else:
+                st.error("❌ Không tìm thấy thông tin phù hợp.")
+        except Exception as e:
+            st.error(f"Lỗi: {e}")
+
+# --- 5. TRANG QUẢN LÝ DỮ LIỆU NGUỒN (ADMIN) ---
+elif page == "Dữ liệu nguồn (Admin)":
+    st.title("📂 Quản Lý Dữ Liệu Nguồn (Up_Data)")
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df_source = conn.read(worksheet="Up_Data", ttl=0)
+    
+    st.write(f"Tổng số khách hàng trong hệ thống: **{len(df_source)}**")
+    
+    search_admin = st.text_input("🔍 Tìm nhanh tên khách hàng:")
+    if search_admin:
+        df_filtered = df_source[df_source.iloc[:, 0].str.contains(search_admin, case=False, na=False)]
+        st.dataframe(df_filtered, use_container_width=True)
+    else:
+        st.dataframe(df_source, use_container_width=True)
+    
+    st.info("💡 Để thêm hoặc sửa dữ liệu, bạn vui lòng thao tác trên file Google Sheets gốc.")
+
+# --- 6. TRANG LỊCH SỬ TRA CỨU (ADMIN) ---
+elif page == "Lịch sử tra cứu":
+    st.title("📋 Nhật Ký Tra Cứu")
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df_history = conn.read(worksheet="History", ttl=0)
+    
+    st.metric("Tổng lượt tra cứu thành công", len(df_history))
+    st.dataframe(df_history.sort_index(ascending=False), use_container_width=True)
+    
+    if st.button("Làm mới dữ liệu"):
         st.rerun()
-    data = conn.read(ttl=0)
-    st.dataframe(data, use_container_width=True, hide_index=True)
-
