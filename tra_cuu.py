@@ -19,37 +19,32 @@ ADMIN_ZALO = "0909000xxx"
 ADMIN_EMAIL = "admin@thansohoc.com"
 ADMIN_PHONE = "0909.000.xxx"
 
-# CSS TỐI ƯU ĐỂ ẨN NÚT MANAGE APP VÀ LÀM ĐẸP
+# --- CSS TRIỆT ĐỂ: ẨN MANAGE APP & LÀM ĐẸP ---
 st.markdown("""
     <style>
-    /* 1. Ẩn các thành phần mặc định của Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* 2. ẨN TRIỆT ĐỂ NÚT MANAGE APP VÀ TOOLBAR GÓC DƯỚI */
-    /* Nhắm vào toolbar quản trị */
-    [data-testid="stStatusWidget"], 
+    /* ẨN HEADER, FOOTER VÀ MENU GỐC */
+    header, footer, #MainMenu {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+
+    /* ẨN TRIỆT ĐỂ THANH QUẢN TRỊ (MANAGE APP, HOSTED WITH STREAMLIT) */
+    /* Dùng display: none !important để xóa bỏ hoàn toàn khỏi giao diện */
+    div[data-testid="stStatusWidget"], 
     .stAppToolbar, 
     .stDeployButton,
-    [data-testid="stDecoration"],
-    div[class*="viewerBadge"] {
+    div[class*="viewerBadge"],
+    div[class*="stAppDeployButton"],
+    [data-testid="stDecoration"] {
         display: none !important;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-        visibility: hidden;
     }
 
-    /* Ẩn các nút nhỏ khi hover ở góc ảnh/biểu đồ nếu có */
-    button[title="View source"] {display: none !important;}
-
-    /* 3. Đảm bảo Sidebar và giao diện chính không bị ảnh hưởng */
-    [data-testid="stSidebarContent"] {
+    /* Đảm bảo Sidebar vẫn hiển thị và nội dung không bị đẩy lên quá cao */
+    .main .block-container {
         padding-top: 2rem;
     }
-    
-    /* 4. Tùy chỉnh card kết quả */
+
+    /* Tùy chỉnh card kết quả (Giữ nguyên logic hiển thị của bạn) */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -57,19 +52,18 @@ st.markdown("""
         border: 2px solid #ff4b4b;
         text-align: center;
         margin-bottom: 20px;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     }
     .big-number {
-        font-size: 3rem;
+        font-size: 3.5rem;
         font-weight: bold;
         color: #ff4b4b;
-        line-height: 1;
+        margin: 10px 0;
     }
     .label-text {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         font-weight: 600;
         color: #31333F;
-        margin-bottom: 5px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -149,7 +143,6 @@ if btn_search:
         try:
             with st.spinner("Đang kết nối với vũ trụ..."):
                 df = conn.read(ttl=0)
-                
                 df['n_match'] = df.iloc[:, 0].apply(clean_id)
                 df['d_match'] = df.iloc[:, 1].apply(clean_id)
                 
@@ -181,8 +174,9 @@ if btn_search:
                     with c_share_fb:
                         st.link_button("Chia sẻ Facebook", f"https://www.facebook.com/sharer/sharer.php?u={APP_URL}")
                     with c_copy:
-                         st.link_button("Gửi Zalo cho bạn bè", f"https://zalo.me/share/?url={APP_URL}")
+                        st.link_button("Gửi Zalo", f"https://zalo.me/share/?url={APP_URL}")
 
+                    # Ghi lịch sử
                     try:
                         now_vn = (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S")
                         new_log = pd.DataFrame([{
