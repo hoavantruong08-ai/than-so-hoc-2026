@@ -19,41 +19,6 @@ ADMIN_ZALO = "0909000xxx" # Số điện thoại Zalo Admin
 ADMIN_EMAIL = "admin@thansohoc.com"
 ADMIN_PHONE = "0909.000.xxx"
 
-# CSS tùy chỉnh để làm đẹp
-st.markdown("""
-    <style>
-    /* Ẩn menu mặc định */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {display:none;}
-    
-    /* Tùy chỉnh card kết quả */
-    .result-card {
-        background-color: #f0f2f6;
-        padding: 20px;
-        border-radius: 10px;
-        border: 2px solid #ff4b4b;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .big-number {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #ff4b4b;
-    }
-    .label-text {
-        font-size: 1.2rem;
-        font-weight: 500;
-        color: #31333F;
-    }
-    
-    /* Ẩn trang trí mặc định của Streamlit */
-    [data-testid="stToolbar"] {display: none;}
-    [data-testid="stDecoration"] {display: none;}
-    </style>
-    """, unsafe_allow_html=True)
-
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
     if not text or str(text) == "nan": return ""
