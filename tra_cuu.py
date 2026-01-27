@@ -22,17 +22,33 @@ ADMIN_PHONE = "0909.000.xxx"
 # CSS tùy chỉnh để làm đẹp
 st.markdown("""
     <style>
-    /* 1. Ẩn menu, footer và header mặc định */
+    /* 1. Ẩn menu, footer và header */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .stDeployButton {display:none;}
     
-    /* 2. Ẩn nút "Manage app" và thanh trạng thái góc dưới bên phải */
-    [data-testid="stStatusWidget"] {visibility: hidden;}
-    button[title="View source"], .viewerBadge_link__1S137 {display: none !important;}
+    /* 2. Ẩn Nút 'Manage app' và thanh đỏ/đen ở dưới cùng */
+    /* Nhắm vào container chứa nút Manage app */
+    div[data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+    
+    /* Nhắm vào thanh toolbar nhỏ ở góc dưới bên phải */
+    .stAppToolbar {
+        display: none !important;
+    }
 
-    /* 3. Tùy chỉnh card kết quả */
+    /* Ẩn link "Hosted with Streamlit" và icon liên quan */
+    .viewerBadge_container__1QSob, .viewerBadge_link__1S137 {
+        display: none !important;
+    }
+
+    /* 3. Đảm bảo Sidebar vẫn hiển thị bình thường */
+    section[data-testid="stSidebar"] {
+        display: flex !important;
+    }
+    
+    /* 4. Giữ card kết quả của bạn */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -41,20 +57,6 @@ st.markdown("""
         text-align: center;
         margin-bottom: 20px;
     }
-    .big-number {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #ff4b4b;
-    }
-    .label-text {
-        font-size: 1.2rem;
-        font-weight: 500;
-        color: #31333F;
-    }
-    
-    /* 4. Ẩn trang trí nhưng GIỮ LẠI giao diện cần thiết */
-    [data-testid="stToolbar"] {display: none;}
-    [data-testid="stDecoration"] {display: none;}
     </style>
     """, unsafe_allow_html=True)
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
