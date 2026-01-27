@@ -1,4 +1,3 @@
+penpyxl
 pandas
-gspread
-google-auth
 streamlit
