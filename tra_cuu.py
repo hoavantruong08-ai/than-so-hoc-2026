@@ -3,101 +3,73 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import unicodedata
 import re
-from datetime import datetime, timedelta
 
 # --- CẤU HÌNH ---
 CLIENT_PASSWORD = "khachhang2026" 
 
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
-# Ẩn menu để chuyên nghiệp
-st.markdown("""<style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stAppDeployButton {display: none !important;}
-    </style>""", unsafe_allow_html=True)
-
-# Hàm loại bỏ dấu tiếng Việt và ký tự đặc biệt
-def remove_accents(input_str):
-    if not input_str or input_str == "nan": return ""
-    s = unicodedata.normalize('NFD', input_str)
-    s = ''.join([c for c in s if unicodedata.category(c) != 'Mn'])
-    s = s.replace('đ', 'd').replace('Đ', 'D')
-    return re.sub(r'[^a-zA-Z0-9]', '', s).lower()
+# Hàm làm sạch văn bản: Bỏ dấu, bỏ khoảng trắng, về chữ thường
+def ultra_clean(text):
+    if not text or str(text) == "nan": return ""
+    # Chuyển về dạng chuẩn NFD để tách dấu
+    text = unicodedata.normalize('NFD', str(text))
+    # Loại bỏ các ký tự dấu
+    text = ''.join([c for c in text if unicodedata.category(c) != 'Mn'])
+    # Xử lý riêng chữ đ/Đ
+    text = text.replace('đ', 'd').replace('Đ', 'D')
+    # Loại bỏ tất cả những gì không phải chữ và số, rồi viết thường
+    return re.sub(r'[^a-zA-Z0-9]', '', text).lower()
 
 if "client_auth" not in st.session_state:
     st.session_state["client_auth"] = False
 
 if not st.session_state["client_auth"]:
-    st.title("🔮 Cổng Tra Cứu Thần Số Học")
-    pwd_input = st.text_input("Mật khẩu truy cập:", type="password")
+    st.title("🔮 Cổng Tra Cứu")
+    pwd = st.text_input("Mật khẩu truy cập:", type="password")
     if st.button("Truy cập"):
-        if pwd_input == CLIENT_PASSWORD:
+        if pwd == CLIENT_PASSWORD:
             st.session_state["client_auth"] = True
             st.rerun()
-        else:
-            st.error("❌ Sai mật khẩu.")
+        else: st.error("Sai mật khẩu")
     st.stop()
 
-# --- KẾT NỐI DỮ LIỆU ---
+# --- PHẦN TRA CỨU CHÍNH ---
+st.title("🔍 Tra Cứu Thần Số Học")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.title("🔍 Tra Cứu Thần Số Học")
-with st.container():
-    input_name = st.text_input("1. Nhập Họ và Tên (Ví dụ: Nguyễn Văn A):")
-    input_dob = st.text_input("2. Nhập Ngày tháng năm sinh (Ví dụ: 26031990):")
-    btn_search = st.button("Tra cứu ngay")
+name_in = st.text_input("Nhập Họ và Tên (không cần dấu):")
+dob_in = st.text_input("Nhập Ngày sinh (ví dụ: 26031990):")
 
-if btn_search:
-    if input_name and input_dob:
+if st.button("Tra cứu ngay"):
+    if name_in and dob_in:
         try:
-            # Đọc Tab đầu tiên (Dữ liệu gốc)
+            # Ép App đọc dữ liệu mới nhất, không dùng cache
             df = conn.read(ttl=0)
             
-            # Lấy tiêu đề cột theo vị trí để tránh lỗi dấu tiếng Việt trong tiêu đề
-            col_list = df.columns.tolist()
-            name_col = col_list[0] # Cột A
-            dob_col = col_list[1]  # Cột B
-            scd_col = col_list[3]  # Cột D
-            sdm_col = col_list[4]  # Cột E
-
-            # CHUẨN HÓA DỮ LIỆU ĐỂ SO SÁNH (Bỏ dấu, bỏ cách, về chữ thường)
-            df['name_match'] = df[name_col].astype(str).apply(remove_accents)
-            df['dob_match'] = df[dob_col].astype(str).apply(remove_accents)
+            # Làm sạch dữ liệu trong Sheet để đối soát
+            # Cột 0 là Họ Tên, Cột 1 là Ngày Sinh
+            df['name_check'] = df.iloc[:, 0].apply(ultra_clean)
+            df['dob_check'] = df.iloc[:, 1].apply(ultra_clean)
             
-            search_name = remove_accents(input_name)
-            search_dob = remove_accents(input_dob)
+            # Làm sạch dữ liệu người dùng nhập
+            search_name = ultra_clean(name_in)
+            search_dob = ultra_clean(dob_in)
             
-            # Tìm kiếm
-            match = df[(df['name_match'] == search_name) & (df['dob_match'] == search_dob)]
+            # Thực hiện so khớp
+            result = df[(df['name_check'] == search_name) & (df['dob_check'] == search_dob)]
             
-            if not match.empty:
-                res_name = match.iloc[0][name_col]
-                res_scd = match.iloc[0][scd_col]
-                res_sdm = match.iloc[0][sdm_col]
-                
-                st.success(f"Chào bạn **{res_name}**!")
-                c1, c2 = st.columns(2)
-                c1.metric("Số Chủ Đạo", res_scd)
-                c2.metric("Số Định Mệnh", res_sdm)
-                
-                # Ghi lịch sử vào tab History
-                try:
-                    gio_vn = datetime.now() + timedelta(hours=7)
-                    hist_df = conn.read(worksheet="History", ttl=0)
-                    new_log = pd.DataFrame([{
-                        "Thời Gian Tra Cứu": gio_vn.strftime("%d/%m/%Y %H:%M:%S"),
-                        "Họ Và Tên": res_name,
-                        "Ngày Sinh": input_dob,
-                        "Trạng Thái": "Thành công"
-                    }])
-                    updated_hist = pd.concat([hist_df, new_log], ignore_index=True)
-                    conn.update(worksheet="History", data=updated_hist)
-                except: pass
+            if not result.empty:
+                st.success(f"Tìm thấy kết quả cho: **{result.iloc[0, 0]}**")
+                col1, col2 = st.columns(2)
+                # Cột 3 là Số Chủ Đạo, Cột 4 là Số Định Mệnh
+                col1.metric("Số Chủ Đạo", result.iloc[0, 3])
+                col2.metric("Số Định Mệnh", result.iloc[0, 4])
             else:
-                st.error("❌ Không tìm thấy thông tin. Vui lòng kiểm tra lại Họ tên hoặc Ngày sinh.")
+                st.error("❌ Không tìm thấy thông tin. Hãy kiểm tra lại dữ liệu trong Sheet!")
+                # Debug ẩn để bạn tự kiểm tra
+                with st.expander("Kiểm tra lỗi kỹ thuật"):
+                    st.write("Dữ liệu bạn nhập đã làm sạch:", search_name, "|", search_dob)
+                    st.write("Dòng đầu tiên trong Sheet đã làm sạch:", df['name_check'].iloc[0], "|", df['dob_check'].iloc[0])
         except Exception as e:
-            st.error("⚠️ Lỗi kết nối dữ liệu. Vui lòng kiểm tra lại file Sheets.")
-    else:
-        st.warning("⚠️ Hãy nhập đủ thông tin.")
+            st.error(f"Lỗi hệ thống: {e}")
