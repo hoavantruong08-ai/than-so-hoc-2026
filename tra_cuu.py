@@ -22,7 +22,12 @@ ADMIN_PHONE = "0909.000.xxx"
 # CSS tùy chỉnh để làm đẹp
 st.markdown("""
     <style>
-        
+    /* Ẩn menu mặc định */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
     /* Tùy chỉnh card kết quả */
     .result-card {
         background-color: #f0f2f6;
