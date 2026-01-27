@@ -1,4 +1,4 @@
-openpyxl
-pandas
 streamlit
+pandas
 st-gsheets-connection
+openpyxl
