@@ -15,26 +15,21 @@ st.set_page_config(
 # --- CSS SỬA LỖI: HIỆN TÁC VỤ - ẨN MANAGE APP ---
 st.markdown("""
     <style>
-    /* 1. HIỆN LẠI SIDEBAR VÀ HEADER (Đã bị ẩn ở các bản trước) */
-    header[data-testid="stHeader"] {
-        visibility: visible !important;
-        display: flex !important;
-    }
-    
-    section[data-testid="stSidebar"] {
+    /* 1. MỞ LẠI TẤT CẢ GIAO DIỆN ĐÃ BỊ ẨN NHẦM */
+    header, [data-testid="stHeader"], [data-testid="stSidebar"] {
         visibility: visible !important;
         display: flex !important;
     }
 
-    /* 2. CHỈ ẨN DUY NHẤT NÚT MANAGE APP VÀ NÚT ĐỎ GÓC DƯỚI */
+    /* 2. CHỈ ĐÚNG MỤC TIÊU: ẨN NÚT MANAGE APP VÀ NÚT ĐỎ GÓC DƯỚI */
     div[data-testid="stStatusWidget"], 
     .stAppToolbar, 
     footer,
     div[class*="viewerBadge"] {
         display: none !important;
     }
-
-    /* 3. LÀM ĐẸP CARD KẾT QUẢ (GIỮ NGUYÊN LOGIC CỦA BẠN) */
+    
+    /* 3. GIỮ NGUYÊN CARD KẾT QUẢ CỦA BẠN */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -42,11 +37,6 @@ st.markdown("""
         border: 2px solid #ff4b4b;
         text-align: center;
         margin-bottom: 20px;
-    }
-    .big-number {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #ff4b4b;
     }
     </style>
     """, unsafe_allow_html=True)
