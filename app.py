@@ -12,7 +12,6 @@ st.set_page_config(page_title="Thần Số Học 2026", page_icon="🔮", layout
 def clean_id(text):
     if text is None or str(text).lower() == "nan": return ""
     s = str(text).strip()
-    # Nếu là ngày sinh dạng 26031990, giữ nguyên. Nếu có dấu nháy ' ở đầu thì bỏ.
     if s.startswith("'"): s = s[1:]
     s = unicodedata.normalize('NFD', s)
     s = ''.join([c for c in s if unicodedata.category(c) != 'Mn'])
@@ -30,7 +29,7 @@ if "role" not in st.session_state:
 with st.sidebar:
     if st.session_state["role"] == "admin":
         st.header("⚡ QUẢN TRỊ")
-        menu = st.radio("Chức năng:", ["Tra cứu", "Quản lý Up_Data", "Nhật ký History"])
+        menu = st.radio("Chức năng:", ["Tra cứu", "Quản lý Up_DaTa", "Nhật ký History"])
         if st.button("Đăng xuất Admin"):
             st.session_state["role"] = None
             st.rerun()
@@ -53,40 +52,42 @@ if menu == "Tra cứu":
     
     if st.button("Tra cứu ngay"):
         if n_in and d_in:
-            df = conn.read(worksheet="Up_Data", ttl=0).astype(str) # Ép kiểu str để tránh lỗi định dạng
-            
-            # Tạo bản tạm để so sánh (không ảnh hưởng df gốc)
-            df['n_compare'] = df.iloc[:, 0].apply(clean_id)
-            df['d_compare'] = df.iloc[:, 1].apply(clean_id)
-            
-            match = df[(df['n_compare'] == clean_id(n_in)) & (df['d_compare'] == clean_id(d_in))]
-            
-            if not match.empty:
-                st.success(f"Chào bạn **{match.iloc[0, 0]}**!")
-                c1, c2 = st.columns(2)
-                c1.metric("Số Chủ Đạo", match.iloc[0, 3])
-                c2.metric("Số Định Mệnh", match.iloc[0, 4])
+            try:
+                # ĐÚNG TÊN SHEET: Up_DaTa
+                df = conn.read(worksheet="Up_DaTa", ttl=0).astype(str)
                 
-                # Ghi History
-                try:
-                    hist_df = conn.read(worksheet="History", ttl=0)
-                    new_log = pd.DataFrame([{
-                        "Thời Gian Tra Cứu": (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S"),
-                        "Họ Và Tên": match.iloc[0, 0],
-                        "Ngày Sinh": f"'{clean_id(d_in)}",
-                        "Trạng Thái": "Thành công"
-                    }])
-                    updated_hist = pd.concat([hist_df, new_log], ignore_index=True)
-                    conn.update(worksheet="History", data=updated_hist)
-                except Exception as e:
-                    st.warning(f"Không thể ghi nhật ký: {e}")
-            else:
-                st.error("Không tìm thấy dữ liệu! Vui lòng kiểm tra lại Họ tên hoặc Ngày sinh.")
+                df['n_compare'] = df.iloc[:, 0].apply(clean_id)
+                df['d_compare'] = df.iloc[:, 1].apply(clean_id)
+                
+                match = df[(df['n_compare'] == clean_id(n_in)) & (df['d_compare'] == clean_id(d_in))]
+                
+                if not match.empty:
+                    st.success(f"Chào bạn **{match.iloc[0, 0]}**!")
+                    c1, c2 = st.columns(2)
+                    c1.metric("Số Chủ Đạo", match.iloc[0, 3])
+                    c2.metric("Số Định Mệnh", match.iloc[0, 4])
+                    
+                    # Ghi History
+                    try:
+                        hist_df = conn.read(worksheet="History", ttl=0)
+                        new_log = pd.DataFrame([{
+                            "Thời Gian Tra Cứu": (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S"),
+                            "Họ Và Tên": match.iloc[0, 0],
+                            "Ngày Sinh": f"'{clean_id(d_in)}",
+                            "Trạng Thái": "Thành công"
+                        }])
+                        updated_hist = pd.concat([hist_df, new_log], ignore_index=True)
+                        conn.update(worksheet="History", data=updated_hist)
+                    except: pass
+                else:
+                    st.error("Không tìm thấy dữ liệu!")
+            except Exception as e:
+                st.error(f"Lỗi truy xuất: {e}")
         else:
             st.warning("Vui lòng nhập đầy đủ thông tin.")
 
 # --- 6. QUẢN LÝ DỮ LIỆU ---
-elif menu == "Quản lý Up_Data":
+elif menu == "Quản lý Up_DaTa":
     st.title("📂 Cập Nhật Dữ Liệu Nguồn")
     
     with st.expander("➕ Thêm khách hàng mới", expanded=True):
@@ -94,7 +95,7 @@ elif menu == "Quản lý Up_Data":
             c1, c2 = st.columns(2)
             name = c1.text_input("Họ Tên khách:")
             dob = c2.text_input("Mã Ngày sinh (8 số):")
-            phone = c1.text_input("SĐT:")
+            phone = c1.text_input("Số Điện Thoại:") # Khớp với tiêu đề cột A
             scd = c2.text_input("Số Chủ Đạo:")
             sdm = st.text_input("Số Định Mệnh:")
             btn = st.form_submit_button("Lưu vào Google Sheets")
@@ -102,24 +103,27 @@ elif menu == "Quản lý Up_Data":
         if btn:
             if name and dob:
                 try:
-                    df_old = conn.read(worksheet="Up_Data", ttl=0)
+                    df_old = conn.read(worksheet="Up_DaTa", ttl=0)
                     new_row = pd.DataFrame([{
                         "Họ Tên": str(name), 
-                        "Ngày Sinh": f"'{str(dob)}", # Dấu nháy ' giúp Google Sheet hiểu là chuỗi (tránh mất số 0)
+                        "Ngày Sinh": f"'{str(dob)}", 
                         "Số Điện Thoại": str(phone), 
                         "Số Chủ Đạo": str(scd), 
                         "Số Định Mệnh": str(sdm)
                     }])
                     df_final = pd.concat([df_old, new_row], ignore_index=True)
-                    conn.update(worksheet="Up_Data", data=df_final)
-                    st.success(f"Đã lưu thành công khách hàng: {name}")
+                    conn.update(worksheet="Up_DaTa", data=df_final)
+                    st.success(f"Đã lưu: {name}")
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Lỗi khi ghi dữ liệu: {e}")
+                    st.error(f"Lỗi: {e}")
 
     st.subheader("Danh sách hiện tại")
-    df_src = conn.read(worksheet="Up_Data", ttl=0)
-    st.dataframe(df_src, use_container_width=True)
+    try:
+        df_src = conn.read(worksheet="Up_DaTa", ttl=0)
+        st.dataframe(df_src, use_container_width=True)
+    except:
+        st.info("Chưa có dữ liệu.")
 
 # --- 7. NHẬT KÝ ---
 elif menu == "Nhật ký History":
@@ -128,4 +132,4 @@ elif menu == "Nhật ký History":
         df_h = conn.read(worksheet="History", ttl=0)
         st.dataframe(df_h.sort_index(ascending=False), use_container_width=True)
     except:
-        st.info("Chưa có lịch sử tra cứu.")
+        st.info("Chưa có lịch sử.")
