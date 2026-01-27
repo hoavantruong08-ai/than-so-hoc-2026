@@ -19,15 +19,20 @@ ADMIN_ZALO = "0909000xxx" # Số điện thoại Zalo Admin
 ADMIN_EMAIL = "admin@thansohoc.com"
 ADMIN_PHONE = "0909.000.xxx"
 
-# CSS tùy chỉnh để làm đẹp
+# CSS tùy chỉnh để làm đẹp và sửa lỗi che khuất nội dung
 st.markdown("""
     <style>
-    /* Ẩn menu mặc định */
+    /* Ẩn menu mặc định và header */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
     
+    /* Sửa lỗi nút Manage App che nội dung: Thêm khoảng trống phía dưới trang */
+    .main .block-container {
+        padding-bottom: 100px;
+    }
+
     /* Tùy chỉnh card kết quả */
     .result-card {
         background-color: #f0f2f6;
@@ -178,7 +183,6 @@ if btn_search:
                         if st.button("❤️ Yêu thích"):
                             st.balloons()
                             st.toast("Cảm ơn bạn đã yêu thích!", icon="😍")
-                            # Có thể thêm code lưu log 'Like' vào Google Sheet tại đây nếu muốn
                     
                     with c_share_fb:
                         # Link chia sẻ FB
@@ -201,7 +205,6 @@ if btn_search:
                         updated_history = pd.concat([history_df, new_log], ignore_index=True)
                         conn.update(worksheet="History", data=updated_history)
                     except Exception as log_err:
-                        # Ghi log lỗi âm thầm hoặc warning nhỏ để không phá vỡ giao diện
                         print(f"Log error: {log_err}")
                 else:
                     st.error("❌ Không tìm thấy thông tin phù hợp. Vui lòng kiểm tra lại Họ tên và Ngày sinh.")
