@@ -8,7 +8,7 @@ CLIENT_PASSWORD = "khachhang2026"
 
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
-# Ẩn menu để khách không xóa app
+# Ẩn menu quản lý
 st.markdown("""<style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -42,25 +42,25 @@ with st.container():
 if btn_search:
     if input_name and input_dob:
         try:
-            # Đọc dữ liệu từ tab Up_Data
-            # Sử dụng header=0 để lấy dòng đầu tiên làm tiêu đề
-            df = conn.read(worksheet="Up_Data", ttl=0)
+            # TỰ ĐỘNG ĐỌC DỮ LIỆU (Mặc định Tab đầu tiên)
+            df = conn.read(ttl=0)
             
-            # CHUẨN HÓA DỮ LIỆU ĐỂ SO SÁNH
-            # Lấy cột đầu tiên (Họ Tên) và cột thứ hai (Ngày Sinh) theo vị trí để tránh lỗi dấu tiếng Việt
-            name_col = df.columns[0]
-            dob_col = df.columns[1]
-            scd_col = df.columns[3] # Cột D (Số Chủ Đạo)
-            sdm_col = df.columns[4] # Cột E (Số Định Mệnh)
+            # Lấy tiêu đề cột theo vị trí để tránh lỗi dấu tiếng Việt
+            # Cột 0: Họ Tên, Cột 1: Ngày Sinh, Cột 3: Số Chủ Đạo, Cột 4: Số Định Mệnh
+            col_list = df.columns.tolist()
+            name_col = col_list[0]
+            dob_col = col_list[1]
+            scd_col = col_list[3]
+            sdm_col = col_list[4]
 
-            df['name_clean'] = df[name_col].astype(str).str.strip().str.lower()
-            df['dob_clean'] = df[dob_col].astype(str).str.replace(" ", "").str.strip()
+            # Chuẩn hóa tìm kiếm
+            df['n_clean'] = df[name_col].astype(str).str.strip().str.lower()
+            df['d_clean'] = df[dob_col].astype(str).str.replace(" ", "").str.strip()
             
-            query_name = input_name.strip().lower()
-            query_dob = input_dob.replace(" ", "").strip()
+            q_name = input_name.strip().lower()
+            q_dob = input_dob.replace(" ", "").strip()
             
-            # Tìm kiếm
-            match = df[(df['name_clean'] == query_name) & (df['dob_clean'] == query_dob)]
+            match = df[(df['n_clean'] == q_name) & (df['d_clean'] == q_dob)]
             
             if not match.empty:
                 res_name = match.iloc[0][name_col]
@@ -72,14 +72,14 @@ if btn_search:
                 c1.metric("Số Chủ Đạo", res_scd)
                 c2.metric("Số Định Mệnh", res_sdm)
                 
-                # Ghi lịch sử vào tab History
+                # Ghi lịch sử (Cố gắng ghi vào Tab có tên 'History', nếu lỗi thì bỏ qua)
                 try:
                     gio_vn = datetime.now() + timedelta(hours=7)
                     hist_df = conn.read(worksheet="History", ttl=0)
                     new_log = pd.DataFrame([{
                         "Thời Gian Tra Cứu": gio_vn.strftime("%d/%m/%Y %H:%M:%S"),
                         "Họ Và Tên": res_name,
-                        "Ngày Sinh": query_dob,
+                        "Ngày Sinh": q_dob,
                         "Trạng Thái": "Thành công"
                     }])
                     updated_hist = pd.concat([hist_df, new_log], ignore_index=True)
@@ -87,9 +87,9 @@ if btn_search:
                 except:
                     pass
             else:
-                st.error("❌ Không tìm thấy thông tin. Bạn vui lòng kiểm tra lại Họ tên và Ngày sinh.")
+                st.error("❌ Không tìm thấy thông tin phù hợp.")
         except Exception as e:
-            st.error("⚠️ Lỗi kết nối: Bạn hãy kiểm tra lại cấu hình Secrets hoặc tên Tab 'Up_Data'.")
+            st.error("⚠️ Lỗi kết nối: Vui lòng kiểm tra lại cấu hình Secrets (địa chỉ URL Sheets).")
     else:
         st.warning("⚠️ Hãy nhập đủ thông tin.")
 
