@@ -1,14 +1,14 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
-# --- CẤU HÌNH MẬT KHẨU KHÁCH HÀNG ---
+# --- CẤU HÌNH ---
 CLIENT_PASSWORD = "khachhang2026" 
 
-# 1. CẤU HÌNH TRANG VÀ ẨN MENU QUẢN LÝ
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
+# 1. ẨN MENU QUẢN LÝ
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -18,12 +18,11 @@ hide_st_style = """
             #stDecoration {display:none;}
             [data-testid="stSidebarNav"] {display: none;}
             .stAppDeployButton {display: none !important;}
-            iframe[title="manage-app"] {display: none !important;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# --- KIỂM TRA ĐĂNG NHẬP KHÁCH HÀNG ---
+# --- KIỂM TRA ĐĂNG NHẬP ---
 if "client_auth" not in st.session_state:
     st.session_state["client_auth"] = False
 
@@ -38,77 +37,83 @@ if not st.session_state["client_auth"]:
             st.error("❌ Mật khẩu không chính xác.")
     st.stop()
 
-# --- NỘI DUNG SAU KHI ĐĂNG NHẬP ---
+# --- NỘI DUNG TRA CỨU ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-st.title("🔍 Tra Cứu Kết Quả Thần Số Học")
-st.write("Vui lòng nhập chính xác thông tin để xem kết quả.")
+st.title("🔍 Tra Cứu Thần Số Học")
+st.write("Vui lòng nhập thông tin để xem Số Chủ Đạo và Số Định Mệnh.")
 
 with st.container():
-    input_name = st.text_input("1. Nhập Họ và Tên của bạn:")
-    input_phone = st.text_input("2. Nhập Số điện thoại của bạn:")
+    input_name = st.text_input("1. Nhập Họ và Tên (viết thường hoặc hoa đều được):")
+    input_dob = st.text_input("2. Nhập Ngày tháng năm sinh (viết liền, ví dụ: 26031990):")
     btn_search = st.button("Tra cứu ngay")
 
 if btn_search:
-    if input_name and input_phone:
+    if input_name and input_dob:
         try:
-            # Đọc dữ liệu từ Sheet chính (giả sử sheet đầu tiên)
-            df = conn.read(ttl=0)
+            # 1. Đọc dữ liệu từ tab Up_Data (Chứa dữ liệu gốc)
+            df = conn.read(worksheet="Up_Data", ttl=0)
             
-            # Chuẩn hóa dữ liệu tìm kiếm
-            df['Họ Tên Tìm Kiếm'] = df['Họ Tên'].astype(str).str.strip().str.lower()
+            # Chuẩn hóa dữ liệu để tìm kiếm
+            # Xử lý Họ tên: Bỏ khoảng trắng, đưa về chữ thường
+            df['Họ Tên Tìm'] = df['Họ Tên'].astype(str).str.strip().str.lower()
             name_query = input_name.strip().lower()
-            df['SĐT Tìm Kiếm'] = df['Số Điện Thoại'].astype(str).str.replace(".0", "", regex=False).str.strip()
-            phone_query = input_phone.strip()
             
-            # Tìm kiếm
-            result = df[(df['Họ Tên Tìm Kiếm'] == name_query) & (df['SĐT Tìm Kiếm'] == phone_query)]
+            # Xử lý Ngày sinh: Bỏ khoảng trắng, đưa về dạng chuỗi viết liền
+            df['Ngày Sinh Tìm'] = df['Ngày Sinh'].astype(str).str.strip()
+            dob_query = input_dob.strip()
+            
+            # Tìm kiếm khớp cả Họ tên và Ngày sinh
+            result = df[(df['Họ Tên Tìm'] == name_query) & (df['Ngày Sinh Tìm'] == dob_query)]
             
             if not result.empty:
                 ho_ten_goc = result.iloc[0]['Họ Tên']
                 so_chu_dao = result.iloc[0]['Số Chủ Đạo']
-                ngay_sinh = result.iloc[0]['Ngày Sinh']
+                so_dinh_menh = result.iloc[0]['Số Định Mệnh']
                 
-                st.success(f"Chào bạn **{ho_ten_goc}**! Đây là kết quả của bạn:")
-                st.markdown(f"""
-                <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
-                    <h2 style="margin:0;">Số Chủ Đạo: <span style="color: #ff4b4b;">{so_chu_dao}</span></h2>
-                    <p style="font-size: 18px;">Ngày sinh: {ngay_sinh}</p>
-                </div>
-                """, unsafe_allow_html=True)
+                st.success(f"Chào bạn **{ho_ten_goc}**! Kết quả của bạn là:")
                 
-                # --- PHẦN GHI LỊCH SỬ TRA CỨU (GIỜ VIỆT NAM) ---
+                # Hiển thị kết quả đẹp mắt
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown(f"""
+                    <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center;">
+                        <p style="margin:0;">Số Chủ Đạo</p>
+                        <h1 style="color: #ff4b4b; margin:0;">{so_chu_dao}</h1>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with col2:
+                    st.markdown(f"""
+                    <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center;">
+                        <p style="margin:0;">Số Định Mệnh</p>
+                        <h1 style="color: #1c83e1; margin:0;">{so_dinh_menh}</h1>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.info("💡 Chuyên gia sẽ sớm gửi bản phân tích chi tiết cho bạn dựa trên hai con số này.")
+
+                # --- 2. GHI LỊCH SỬ VÀO TAB HISTORY ---
                 try:
-                    from datetime import datetime, timedelta
-                    
-                    # Lấy giờ thực của máy chủ và cộng thêm 7 tiếng để ra giờ Việt Nam
                     gio_vn = datetime.now() + timedelta(hours=7)
-                    thoi_gian_thuc = gio_vn.strftime("%d/%m/%Y %H:%M:%S")
-                    
-                    # Tạo dòng dữ liệu lịch sử mới
                     history_entry = pd.DataFrame([{
-                        "Thời Gian Tra Cứu": thoi_gian_thuc,
-                        "Họ Tên": ho_ten_goc,
-                        "Số Điện Thoại": f"'{phone_query}",
-                        "Số Chủ Đạo": so_chu_dao,
+                        "Thời Gian Tra Cứu": gio_vn.strftime("%d/%m/%Y %H:%M:%S"),
+                        "Họ Và Tên": ho_ten_goc,
+                        "Ngày Sinh": dob_query,
                         "Trạng Thái": "Thành công"
                     }])
                     
-                    # Đọc và cập nhật vào Sheet History
                     df_history = conn.read(worksheet="History", ttl=0)
                     updated_history = pd.concat([df_history, history_entry], ignore_index=True)
                     conn.update(worksheet="History", data=updated_history)
                 except:
                     pass
-                
-                st.info("💡 **Lời khuyên:** Hãy phát huy thế mạnh của con số này trong hành trình sắp tới!")
             else:
-                st.error("❌ Không tìm thấy thông tin phù hợp. Vui lòng kiểm tra lại Họ tên hoặc SĐT.")
+                st.error("❌ Không tìm thấy dữ liệu. Vui lòng kiểm tra lại Họ tên hoặc Ngày sinh.")
         except Exception as e:
-            st.error("Lỗi kết nối dữ liệu. Vui lòng báo Admin.")
+            st.error("Lỗi kết nối dữ liệu.")
     else:
-        st.warning("⚠️ Vui lòng điền đầy đủ cả Họ tên và Số điện thoại.")
+        st.warning("⚠️ Vui lòng nhập đầy đủ Họ tên và Ngày sinh.")
 
-if st.button("Thoát hệ thống"):
+if st.button("Thoát"):
     st.session_state["client_auth"] = False
     st.rerun()
