@@ -11,55 +11,31 @@ import streamlit as st
 st.markdown(
     """
     <style>
-    /* 1. Ẩn nút 'Manage app' màu đen ở góc dưới bên phải (chỉ có ở phía Admin) */
+    /* 1. Chỉ ẩn duy nhất nút Manage app (nút màu đen) */
+    /* Chúng ta nhắm vào thuộc tính data-testid của nó */
     div[data-testid="stStatusWidget"] {
-        visibility: hidden;
-        height: 0%;
-        position: fixed;
-    }
-
-    /* 2. Ẩn thanh công cụ phía trên (Share, Star, GitHub, Fork) */
-    header[data-testid="stHeader"] {
-        visibility: hidden;
-        height: 0%;
-    }
-
-    /* 3. QUAN TRỌNG: Đảm bảo không ẩn các nút tùy chỉnh của bạn */
-    /* Nếu các nút đỏ/vàng của bạn nằm trong footer mặc định, ta chỉ ẩn chữ thôi */
-    footer {
-        visibility: hidden;
-    }
-    
-    /* 4. Ép các thành phần nội dung chính không bị đẩy xuống */
-    .block-container {
-        padding-top: 2rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Biến cấu hình (BẠN HÃY THAY ĐỔI LINK CỦA BẠN Ở ĐÂY)
-APP_URL = "https://share.streamlit.io/..." # Link app của bạn sau khi deploy
-ADMIN_ZALO = "0909000xxx" # Số điện thoại Zalo Admin
-ADMIN_EMAIL = "admin@thansohoc.com"
-ADMIN_PHONE = "0909.000.xxx"
-
-# CSS tùy chỉnh để làm đẹp
-import streamlit as st
-
-st.markdown(
-    """
-    <style>
-    /* Chỉ ẩn nút Manage App nhưng giữ lại Menu 3 chấm */
-    button[title="View source code"], 
-    button[title="Manage app"] {
         display: none !important;
     }
+
+    /* 2. Ẩn thanh header phía trên (nơi có chữ Fork, Share...) */
+    header {
+        visibility: hidden !important;
+        height: 0px !important;
+    }
+
+    /* 3. TUYỆT ĐỐI KHÔNG ẨN FOOTER HOẶC ANY DIV KHÁC */
+    /* Điều này giúp các nút hỗ trợ của bạn vẫn hiển thị bình thường */
+    
+    /* Tùy chỉnh thêm: Đẩy nội dung lên sát trên cùng cho đẹp */
+    .main .block-container {
+        padding-top: 1rem;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
+
+# App content của bạn tiếp tục ở đây...
 
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
