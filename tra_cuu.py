@@ -8,7 +8,7 @@ CLIENT_PASSWORD = "khachhang2026"
 
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
-# Ẩn menu quản lý
+# Ẩn menu để chuyên nghiệp
 st.markdown("""<style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -42,24 +42,27 @@ with st.container():
 if btn_search:
     if input_name and input_dob:
         try:
-            # TỰ ĐỘNG ĐỌC DỮ LIỆU (Mặc định Tab đầu tiên)
+            # Đọc Tab đầu tiên (Up_Data)
             df = conn.read(ttl=0)
             
-            # Lấy tiêu đề cột theo vị trí để tránh lỗi dấu tiếng Việt
-            # Cột 0: Họ Tên, Cột 1: Ngày Sinh, Cột 3: Số Chủ Đạo, Cột 4: Số Định Mệnh
+            # 1. Xác định cột dựa trên vị trí (để tránh lỗi tên cột có dấu)
+            # Cột 0: Họ Tên | Cột 1: Ngày Sinh | Cột 3: Số Chủ Đạo | Cột 4: Số Định Mệnh
             col_list = df.columns.tolist()
             name_col = col_list[0]
             dob_col = col_list[1]
             scd_col = col_list[3]
             sdm_col = col_list[4]
 
-            # Chuẩn hóa tìm kiếm
+            # 2. CHUẨN HÓA DỮ LIỆU CỰC MẠNH
+            # Tên: bỏ dấu cách, đưa về chữ thường
             df['n_clean'] = df[name_col].astype(str).str.strip().str.lower()
-            df['d_clean'] = df[dob_col].astype(str).str.replace(" ", "").str.strip()
+            # Ngày sinh: loại bỏ hoàn toàn dấu chấm, gạch ngang, khoảng trắng và .0 (nếu là số)
+            df['d_clean'] = df[dob_col].astype(str).str.replace(r'[\s\.\-\/]', '', regex=True).str.replace('.0', '', regex=False).str.strip()
             
             q_name = input_name.strip().lower()
             q_dob = input_dob.replace(" ", "").strip()
             
+            # 3. Tìm kiếm
             match = df[(df['n_clean'] == q_name) & (df['d_clean'] == q_dob)]
             
             if not match.empty:
@@ -72,7 +75,7 @@ if btn_search:
                 c1.metric("Số Chủ Đạo", res_scd)
                 c2.metric("Số Định Mệnh", res_sdm)
                 
-                # Ghi lịch sử (Cố gắng ghi vào Tab có tên 'History', nếu lỗi thì bỏ qua)
+                # Ghi nhật ký vào tab History
                 try:
                     gio_vn = datetime.now() + timedelta(hours=7)
                     hist_df = conn.read(worksheet="History", ttl=0)
@@ -87,9 +90,9 @@ if btn_search:
                 except:
                     pass
             else:
-                st.error("❌ Không tìm thấy thông tin phù hợp.")
+                st.error("❌ Không tìm thấy thông tin. Bạn hãy kiểm tra lại Họ tên hoặc Ngày sinh (phải khớp chính xác với bảng dữ liệu).")
         except Exception as e:
-            st.error("⚠️ Lỗi kết nối: Vui lòng kiểm tra lại cấu hình Secrets (địa chỉ URL Sheets).")
+            st.error("⚠️ Lỗi hệ thống. Vui lòng báo Admin kiểm tra file Google Sheets.")
     else:
         st.warning("⚠️ Hãy nhập đủ thông tin.")
 
