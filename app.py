@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timedelta
 
 # --- 1. CẤU HÌNH & CSS ---
-st.set_page_config(page_title="Thần Số Học 2026", page_icon="🔮", layout="wide")
+st.set_page_config(page_title="Hệ Thống Thần Số Học", page_icon="🔮", layout="wide")
 
 st.markdown("""
     <style>
@@ -14,12 +14,13 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
+    [data-testid="stToolbar"] {display: none;}
     .stAppDeployButton {display: none !important;}
     iframe[title="Manage app"] {display: none !important;}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. HÀM XỬ LÝ ID ---
+# --- 2. HÀM XỬ LÝ ---
 def clean_id(text):
     if not text or str(text) == "nan": return ""
     s = str(text).split('.')[0].strip()
@@ -27,21 +28,21 @@ def clean_id(text):
     s = ''.join([c for c in s if unicodedata.category(c) != 'Mn'])
     s = s.replace('đ', 'd').replace('Đ', 'D')
     s = re.sub(r'[^a-zA-Z0-9]', '', s).lower()
-    if s.isdigit() and len(s) == 7:
-        s = "0" + s
+    if s.isdigit() and len(s) == 7: s = "0" + s
     return s
 
-# Hàm ghi dữ liệu "Bảo hiểm" - Thử cả update và create
-def safe_write(conn, worksheet_name, data_df):
+# Hàm ghi dữ liệu siêu bền (Thử tất cả các hàm có thể có của thư viện)
+def super_save(conn, worksheet_name, data_df):
     try:
-        # Thử cách 1
+        # Cách 1: Dùng update (Phổ biến nhất)
         conn.update(worksheet=worksheet_name, data=data_df)
-    except AttributeError:
+    except Exception:
         try:
-            # Thử cách 2 nếu cách 1 không có hàm
+            # Cách 2: Dùng create (Dành cho bản mới)
             conn.create(worksheet=worksheet_name, data=data_df)
         except Exception as e:
-            st.error(f"Lỗi ghi dữ liệu: {e}")
+            st.error(f"⚠️ Lỗi kỹ thuật Google Sheets: {e}")
+            st.info("Mẹo: Hãy đảm bảo bạn đã Share quyền 'Editor' cho file Sheet.")
 
 # --- 3. PHÂN QUYỀN ---
 if "role" not in st.session_state:
@@ -70,7 +71,7 @@ if menu == "Tra cứu":
 
     conn = st.connection("gsheets", type=GSheetsConnection)
     n_in = st.text_input("Họ và Tên:")
-    d_in = st.text_input("Ngày sinh (Mã 8 số):")
+    d_in = st.text_input("Mã Ngày sinh (8 số):")
     
     if st.button("Tra cứu ngay"):
         df = conn.read(worksheet="Up_Data", ttl=0)
@@ -83,48 +84,41 @@ if menu == "Tra cứu":
             c1, c2 = st.columns(2)
             c1.metric("Số Chủ Đạo", str(match.iloc[0, 3]).split('.')[0])
             c2.metric("Số Định Mệnh", str(match.iloc[0, 4]).split('.')[0])
-            # Ghi History an toàn
             try:
                 hist_df = conn.read(worksheet="History", ttl=0)
                 new_log = pd.DataFrame([{"Thời Gian Tra Cứu": (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S"), "Họ Và Tên": match.iloc[0, 0], "Ngày Sinh": f"'{clean_id(d_in)}", "Trạng Thái": "Thành công"}])
-                safe_write(conn, "History", pd.concat([hist_df, new_log], ignore_index=True))
+                super_save(conn, "History", pd.concat([hist_df, new_log], ignore_index=True))
             except: pass
         else: st.error("Không tìm thấy dữ liệu!")
 
-# --- 5. TRANG QUẢN LÝ DỮ LIỆU ---
+# --- 5. TRANG QUẢN LÝ ---
 elif menu == "Quản lý Up_Data":
-    st.title("📂 Quản Lý Dữ Liệu Nguồn")
+    st.title("📂 Cập Nhật Dữ Liệu Nguồn")
     conn = st.connection("gsheets", type=GSheetsConnection)
     
     with st.expander("➕ Thêm khách hàng mới", expanded=True):
-        with st.form("form_add_v3"):
+        with st.form("admin_add_form"):
             c1, c2 = st.columns(2)
-            name = c1.text_input("Họ Tên khách:")
-            dob = c2.text_input("Mã Ngày sinh (8 số):")
+            name = c1.text_input("Họ Tên:")
+            dob = c2.text_input("Ngày sinh (8 số):")
             phone = c1.text_input("SĐT:")
             scd = c2.text_input("Số Chủ Đạo:")
             sdm = st.text_input("Số Định Mệnh:")
-            btn = st.form_submit_button("Lưu vào Hệ Thống")
+            btn = st.form_submit_button("Lưu lên Google Sheets")
             
         if btn:
             if name and dob:
                 df_old = conn.read(worksheet="Up_Data", ttl=0)
                 new_row = pd.DataFrame([{"Họ Tên": str(name), "Ngày Sinh": f"'{str(dob)}", "SĐT": str(phone), "Số Chủ Đạo": str(scd), "Số Định Mệnh": str(sdm)}])
-                df_final = pd.concat([df_old, new_row], ignore_index=True)
-                # Dùng hàm an toàn để ghi
-                safe_write(conn, "Up_Data", df_final)
+                super_save(conn, "Up_Data", pd.concat([df_old, new_row], ignore_index=True))
                 st.success(f"Đã lưu thành công: {name}")
                 st.rerun()
 
-    st.subheader("Danh sách hiện tại")
-    df_src = conn.read(worksheet="Up_Data", ttl=0)
-    search_term = st.text_input("🔍 Tìm kiếm tên khách hàng:")
-    if search_term:
-        df_src = df_src[df_src.iloc[:, 0].astype(str).str.contains(search_term, case=False, na=False)]
-    st.dataframe(df_src, use_container_width=True)
+    st.subheader("Danh sách hiện có")
+    st.dataframe(conn.read(worksheet="Up_Data", ttl=0), use_container_width=True)
 
 # --- 6. NHẬT KÝ ---
 elif menu == "Nhật ký History":
-    st.title("📋 Lịch Sử Hệ Thống")
+    st.title("📋 Lịch Sử Tra Cứu")
     conn = st.connection("gsheets", type=GSheetsConnection)
     st.dataframe(conn.read(worksheet="History", ttl=0).sort_index(ascending=False), use_container_width=True)
