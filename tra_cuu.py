@@ -52,7 +52,8 @@ st.markdown("""
     [data-testid="stToolbar"] {display: none;}
     [data-testid="stDecoration"] {display: none;}
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True
+)
 
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
