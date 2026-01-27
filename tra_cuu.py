@@ -13,30 +13,30 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ... (Giữ nguyên các biến APP_URL, ADMIN_ZALO, v.v.)
+# Biến cấu hình
+APP_URL = "https://share.streamlit.io/..." 
+ADMIN_ZALO = "0909000xxx" 
+ADMIN_EMAIL = "admin@thansohoc.com"
+ADMIN_PHONE = "0909.000.xxx"
 
-# CSS chỉ tập trung ẩn nút "Manage app" và làm đẹp card
+# CSS ĐÃ SỬA: Chỉ ẩn nút Manage app và Deploy, giữ nguyên Header/Toolbar để tránh lỗi giao diện
 st.markdown("""
     <style>
-    /* CHỈ ẨN NÚT MANAGE APP VÀ CÁC NÚT TRIỂN KHAI */
-    .stDeployButton {display:none;}
-    footer {visibility: hidden;}
+    /* 1. Ẩn nút Deploy và Footer mặc định */
+    .stDeployButton {display:none !important;}
+    footer {visibility: hidden !important;}
     
-    /* ẨN NÚT MANAGE APP GÓC DƯỚI PHẢI TRÊN STREAMLIT CLOUD */
-    button[data-testid="stSidebarCollapse"] ~ div[data-testid="stToolbar"],
-    div[data-testid="stStatusWidget"],
-    #manage-app-button, 
-    .st-emotion-cache-1085m66 { 
-        display: none !important; 
-    }
-
-    /* ĐẢM BẢO NỘI DUNG KHÔNG BỊ ĐÈ */
+    /* 2. Ẩn nút "Manage app" ở góc dưới bên phải */
+    div[data-testid="stStatusWidget"] {display: none !important;}
+    button[title="Manage app"] {display: none !important;}
+    
+    /* 3. Đảm bảo nội dung không bị đẩy lên quá sát hoặc bị che */
     .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
     }
 
-    /* Tùy chỉnh card kết quả (Giữ nguyên style của bạn) */
+    /* Tùy chỉnh card kết quả (Giữ nguyên của bạn) */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -75,7 +75,6 @@ with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712009.png", width=100)
     st.title("Trung Tâm Hỗ Trợ")
     
-    # Kiểm tra trạng thái đăng nhập để hiển thị
     if "client_auth" in st.session_state and st.session_state["client_auth"]:
         st.success("✅ Đang đăng nhập: Khách Hàng")
         if st.button("Đăng xuất"):
@@ -89,14 +88,11 @@ with st.sidebar:
     st.markdown(f"**Hotline:** {ADMIN_PHONE}")
     st.markdown(f"**Email:** {ADMIN_EMAIL}")
     
-    # Nút liên hệ nhanh
     st.markdown("### Kết nối nhanh")
     col_zalo, col_fb = st.columns(2)
     with col_zalo:
-        # Link Zalo (Mở chat với Admin)
         st.link_button("Chat Zalo", f"https://zalo.me/{ADMIN_ZALO}")
     with col_fb:
-        # Link Facebook Fanpage (Ví dụ)
         st.link_button("Fanpage", "https://facebook.com")
 
 # --- 4. MÀN HÌNH ĐĂNG NHẬP ---
@@ -136,15 +132,11 @@ if btn_search:
     if name_in and dob_in:
         try:
             with st.spinner("Đang kết nối với vũ trụ..."):
-                # Đọc dữ liệu
                 df = conn.read(ttl=0)
-                
                 df['n_match'] = df.iloc[:, 0].apply(clean_id)
                 df['d_match'] = df.iloc[:, 1].apply(clean_id)
-                
                 s_name = clean_id(name_in)
                 s_dob = clean_id(dob_in)
-                
                 match = df[(df['n_match'] == s_name) & (df['d_match'] == s_dob)]
                 
                 if not match.empty:
@@ -152,66 +144,40 @@ if btn_search:
                     scd = str(match.iloc[0, 3]).split('.')[0]
                     sdm = str(match.iloc[0, 4]).split('.')[0]
                     
-                    # --- HIỂN THỊ KẾT QUẢ ĐẸP ---
                     st.markdown("---")
                     st.success(f"🎉 Chào mừng bạn **{res_full_name.upper()}**!")
-                    
                     col_res1, col_res2 = st.columns(2)
-                    
                     with col_res1:
-                        st.markdown(f"""
-                        <div class="result-card">
-                            <div class="label-text">Số Chủ Đạo</div>
-                            <div class="big-number">{scd}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
+                        st.markdown(f'<div class="result-card"><div class="label-text">Số Chủ Đạo</div><div class="big-number">{scd}</div></div>', unsafe_allow_html=True)
                     with col_res2:
-                        st.markdown(f"""
-                        <div class="result-card">
-                            <div class="label-text">Số Định Mệnh</div>
-                            <div class="big-number">{sdm}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.markdown(f'<div class="result-card"><div class="label-text">Số Định Mệnh</div><div class="big-number">{sdm}</div></div>', unsafe_allow_html=True)
 
-                    # --- PHẦN TƯƠNG TÁC (SHARE & LIKE) ---
                     st.markdown("### 💖 Bạn cảm thấy thế nào?")
                     c_like, c_share_fb, c_copy = st.columns([1, 1, 1])
-                    
                     with c_like:
                         if st.button("❤️ Yêu thích"):
                             st.balloons()
                             st.toast("Cảm ơn bạn đã yêu thích!", icon="😍")
-                    
                     with c_share_fb:
-                        # Link chia sẻ FB
                         fb_share_url = f"https://www.facebook.com/sharer/sharer.php?u={APP_URL}"
                         st.link_button("Chia sẻ Facebook", fb_share_url)
-
                     with c_copy:
                          st.link_button("Gửi Zalo cho bạn bè", f"https://zalo.me/share/?url={APP_URL}")
 
-                    # --- PHẦN GHI LỊCH SỬ (LOGIC GỐC) ---
                     try:
                         now_vn = (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S")
-                        new_log = pd.DataFrame([{
-                            "Thời Gian Tra Cứu": now_vn,
-                            "Họ Và Tên": res_full_name,
-                            "Ngày Sinh": f"'{s_dob}",
-                            "Trạng Thái": "Thành công"
-                        }])
+                        new_log = pd.DataFrame([{"Thời Gian Tra Cứu": now_vn, "Họ Và Tên": res_full_name, "Ngày Sinh": f"'{s_dob}", "Trạng Thái": "Thành công"}])
                         history_df = conn.read(worksheet="History", ttl=0)
                         updated_history = pd.concat([history_df, new_log], ignore_index=True)
                         conn.update(worksheet="History", data=updated_history)
                     except Exception as log_err:
                         print(f"Log error: {log_err}")
                 else:
-                    st.error("❌ Không tìm thấy thông tin phù hợp. Vui lòng kiểm tra lại Họ tên và Ngày sinh.")
+                    st.error("❌ Không tìm thấy thông tin phù hợp.")
         except Exception as e:
             st.error(f"Lỗi hệ thống: {e}")
     else:
         st.warning("Vui lòng nhập đầy đủ thông tin.")
 
-# Footer nhỏ
 st.markdown("---")
 st.caption("© 2026 Tra Cứu Thần Số Học | Phát triển bởi Team Admin")
