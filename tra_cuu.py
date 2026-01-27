@@ -4,39 +4,55 @@ import pandas as pd
 import unicodedata
 import re
 from datetime import datetime, timedelta
-import streamlit as st
 
-# Tuyệt chiêu cuối: Thu nhỏ nút Manage App về 0px
-st.markdown(
-    """
-    <style>
-    /* Nhắm vào container chứa nút Manage app và thu nhỏ nó lại */
-    [data-testid="stStatusWidget"] {
-        width: 0px !important;
-        height: 0px !important;
-        overflow: hidden !important;
-        line-height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    
-    /* Xử lý thanh Header phía trên để không bị khoảng trắng */
-    header[data-testid="stHeader"] {
-        height: 0px !important;
-        min-height: 0px !important;
-        display: none !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+# --- 1. CẤU HÌNH & CSS GIAO DIỆN ---
+st.set_page_config(
+    page_title="Tra Cứu Thần Số Học VIP",
+    page_icon="🔮",
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
 
-# KHẮC PHỤC LỖI NameError (Admin_Phone):
-# Đảm bảo bạn đã định nghĩa biến này trước khi gọi st.markdown ở phía dưới
-ADMIN_PHONE = "0909.000.xxx" 
+# Biến cấu hình (BẠN HÃY THAY ĐỔI LINK CỦA BẠN Ở ĐÂY)
+APP_URL = "https://share.streamlit.io/..." # Link app của bạn sau khi deploy
+ADMIN_ZALO = "0909000xxx" # Số điện thoại Zalo Admin
+ADMIN_EMAIL = "admin@thansohoc.com"
+ADMIN_PHONE = "0909.000.xxx"
 
-st.title("Cổng Tra Cứu Thần Số Học")
-st.write(f"Hotline: {ADMIN_PHONE}")
+# CSS tùy chỉnh để làm đẹp
+st.markdown("""
+    <style>
+    /* Ẩn menu mặc định */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
+    /* Tùy chỉnh card kết quả */
+    .result-card {
+        background-color: #f0f2f6;
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #ff4b4b;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .big-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ff4b4b;
+    }
+    .label-text {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #31333F;
+    }
+    
+    /* Ẩn trang trí mặc định của Streamlit */
+    [data-testid="stToolbar"] {display: none;}
+    [data-testid="stDecoration"] {display: none;}
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
