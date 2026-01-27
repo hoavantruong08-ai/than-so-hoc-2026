@@ -13,27 +13,30 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Biến cấu hình (BẠN HÃY THAY ĐỔI LINK CỦA BẠN Ở ĐÂY)
-APP_URL = "https://share.streamlit.io/..." # Link app của bạn sau khi deploy
-ADMIN_ZALO = "0909000xxx" # Số điện thoại Zalo Admin
-ADMIN_EMAIL = "admin@thansohoc.com"
-ADMIN_PHONE = "0909.000.xxx"
+# ... (Giữ nguyên các biến APP_URL, ADMIN_ZALO, v.v.)
 
-# CSS tùy chỉnh để làm đẹp và sửa lỗi che khuất nội dung
+# CSS chỉ tập trung ẩn nút "Manage app" và làm đẹp card
 st.markdown("""
     <style>
-    /* Ẩn menu mặc định và header */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* CHỈ ẨN NÚT MANAGE APP VÀ CÁC NÚT TRIỂN KHAI */
     .stDeployButton {display:none;}
+    footer {visibility: hidden;}
     
-    /* Sửa lỗi nút Manage App che nội dung: Thêm khoảng trống phía dưới trang */
-    .main .block-container {
-        padding-bottom: 100px;
+    /* ẨN NÚT MANAGE APP GÓC DƯỚI PHẢI TRÊN STREAMLIT CLOUD */
+    button[data-testid="stSidebarCollapse"] ~ div[data-testid="stToolbar"],
+    div[data-testid="stStatusWidget"],
+    #manage-app-button, 
+    .st-emotion-cache-1085m66 { 
+        display: none !important; 
     }
 
-    /* Tùy chỉnh card kết quả */
+    /* ĐẢM BẢO NỘI DUNG KHÔNG BỊ ĐÈ */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    /* Tùy chỉnh card kết quả (Giữ nguyên style của bạn) */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -52,10 +55,6 @@ st.markdown("""
         font-weight: 500;
         color: #31333F;
     }
-    
-    /* Ẩn trang trí mặc định của Streamlit */
-    [data-testid="stToolbar"] {display: none;}
-    [data-testid="stDecoration"] {display: none;}
     </style>
     """, unsafe_allow_html=True)
 
