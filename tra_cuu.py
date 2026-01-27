@@ -105,7 +105,7 @@ with st.container(border=True):
     with col_input1:
         name_in = st.text_input("Họ và Tên (viết thường,VD : Luu Xuan Quang):", placeholder="Luu Xuan Quang")
     with col_input2:
-        dob_in = st.text_input("Mã Ngày Sinh (Ví dụ: 10101972):", placeholder="ddmmyyyy")
+        dob_in = st.text_input("Mã Ngày Sinh (Ví dụ: 01101972):", placeholder="ddmmyyyy")
     
     btn_search = st.button("🔍 Tra cứu ngay", type="primary", use_container_width=True)
 
