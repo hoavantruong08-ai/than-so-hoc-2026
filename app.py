@@ -5,7 +5,7 @@ import unicodedata
 import re
 from datetime import datetime, timedelta
 
-# --- 1. CẤU HÌNH & ẨN MENU ---
+# --- 1. CẤU HÌNH & CSS ---
 st.set_page_config(page_title="Quản Lý Thần Số Học", page_icon="🔮", layout="wide")
 
 st.markdown("""
@@ -14,6 +14,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
+    [data-testid="stToolbar"] {display: none;}
     .stAppDeployButton {display: none !important;}
     iframe[title="Manage app"] {display: none !important;}
     </style>
@@ -31,40 +32,43 @@ def clean_id(text):
         s = "0" + s
     return s
 
-# --- 3. ĐIỀU HƯỚNG ---
+# --- 3. PHÂN QUYỀN TRUY CẬP ---
 if "role" not in st.session_state:
     st.session_state["role"] = None
 
 with st.sidebar:
     if st.session_state["role"] == "admin":
-        st.title("🛡️ ADMIN PANEL")
-        menu = st.radio("Chức năng:", ["Tra cứu", "Thêm dữ liệu nguồn", "Xem danh sách & Lịch sử"])
-        if st.button("Đăng xuất"):
+        st.header("⚡ ADMIN MENU")
+        menu = st.radio("Chức năng:", ["Tra cứu khách", "Quản lý dữ liệu (Up_Data)", "Xem nhật ký (History)"])
+        if st.button("Đăng xuất Admin"):
             st.session_state["role"] = None
             st.rerun()
     else:
-        menu = "Tra cứu"
+        st.write("Vui lòng đăng nhập Admin để hiện thêm menu.")
+        menu = "Tra cứu khách"
 
-# --- 4. TRANG TRA CỨU ---
-if menu == "Tra cứu":
-    st.title("🔮 Tra Cứu Thần Số Học")
+# --- 4. TRANG TRA CỨU (USER & ADMIN) ---
+if menu == "Tra cứu khách":
+    st.title("🔍 Tra Cứu Kết Quả")
     if st.session_state["role"] is None:
-        pwd = st.text_input("Mật khẩu:", type="password")
+        pwd = st.text_input("Mật khẩu truy cập:", type="password")
         if st.button("Truy cập"):
             if pwd == "khachhang2026": st.session_state["role"] = "user"; st.rerun()
             if pwd == "admin2026": st.session_state["role"] = "admin"; st.rerun()
-            st.error("Sai mật khẩu!")
+            st.error("Mật khẩu không đúng!")
         st.stop()
 
     conn = st.connection("gsheets", type=GSheetsConnection)
-    name_in = st.text_input("Họ và Tên:")
-    dob_in = st.text_input("Ngày sinh (ví dụ: 02091997):")
-    
+    with st.container():
+        name_in = st.text_input("Nhập Họ và Tên:")
+        dob_in = st.text_input("Nhập Ngày sinh (Ví dụ: 02091997):")
+        
     if st.button("Tra cứu ngay"):
         df = conn.read(worksheet="Up_Data", ttl=0)
         df['n_id'] = df.iloc[:, 0].apply(clean_id)
         df['d_id'] = df.iloc[:, 1].apply(clean_id)
         s_name, s_dob = clean_id(name_in), clean_id(dob_in)
+        
         match = df[(df['n_id'] == s_name) & (df['d_id'] == s_dob)]
         
         if not match.empty:
@@ -75,57 +79,53 @@ if menu == "Tra cứu":
             c1.metric("Số Chủ Đạo", scd)
             c2.metric("Số Định Mệnh", sdm)
             
-            # Ghi sử (History)
+            # Ghi History an toàn
             try:
-                hist = conn.read(worksheet="History", ttl=0)
-                new_h = pd.DataFrame([{"Thời Gian Tra Cứu": (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S"), "Họ Và Tên": match.iloc[0, 0], "Ngày Sinh": f"'{s_dob}", "Trạng Thái": "Thành công"}])
-                conn.create(worksheet="History", data=pd.concat([hist, new_h], ignore_index=True))
+                hist_df = conn.read(worksheet="History", ttl=0)
+                now_vn = (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S")
+                new_log = pd.DataFrame([{"Thời Gian Tra Cứu": now_vn, "Họ Và Tên": match.iloc[0, 0], "Ngày Sinh": f"'{s_dob}", "Trạng Thái": "Thành công"}])
+                # Sử dụng create để cập nhật bảng
+                conn.create(worksheet="History", data=pd.concat([hist_df, new_log], ignore_index=True))
             except: pass
-        else: st.error("Không tìm thấy dữ liệu!")
-
-# --- 5. TRANG THÊM DỮ LIỆU (UP THÔNG TIN NGUỒN) ---
-elif menu == "Thêm dữ liệu nguồn":
-    st.title("➕ Thêm Khách Hàng Mới")
-    st.info("Dữ liệu sẽ được thêm trực tiếp vào tab Up_Data")
-    
-    with st.form("add_form"):
-        new_name = st.text_input("Họ và Tên khách hàng:")
-        new_dob = st.text_input("Mã Ngày sinh (8 số, ví dụ: 01011990):")
-        new_phone = st.text_input("Số điện thoại (nếu có):")
-        new_scd = st.text_input("Số Chủ Đạo:")
-        new_sdm = st.text_input("Số Định Mệnh:")
-        submit_add = st.form_submit_button("Cập nhật vào hệ thống")
-    
-    if submit_add:
-        if new_name and new_dob and new_scd and new_sdm:
-            try:
-                conn = st.connection("gsheets", type=GSheetsConnection)
-                df_origin = conn.read(worksheet="Up_Data", ttl=0)
-                
-                new_entry = pd.DataFrame([{
-                    "Họ Tên": new_name,
-                    "Ngày Sinh": f"'{new_dob}", # Dấu nháy để giữ số 0 đầu
-                    "SĐT": new_phone,
-                    "Số Chủ Đạo": new_scd,
-                    "Số Định Mệnh": new_sdm
-                }])
-                
-                updated_df = pd.concat([df_origin, new_entry], ignore_index=True)
-                conn.create(worksheet="Up_Data", data=updated_df)
-                st.success(f"Đã thêm thành công khách hàng: {new_name}")
-            except Exception as e:
-                st.error(f"Lỗi khi up dữ liệu: {e}")
         else:
-            st.warning("Vui lòng nhập đủ các thông tin chính.")
+            st.error("Không tìm thấy thông tin!")
 
-# --- 6. XEM DANH SÁCH & LỊCH SỬ ---
-elif menu == "Xem danh sách & Lịch sử":
-    st.title("📊 Quản Lý Dữ Liệu")
+# --- 5. TRANG QUẢN LÝ DỮ LIỆU NGUỒN (ADMIN ONLY) ---
+elif menu == "Quản lý dữ liệu (Up_Data)":
+    st.title("📂 Quản Lý Dữ Liệu Nguồn")
     conn = st.connection("gsheets", type=GSheetsConnection)
     
-    tab1, tab2 = st.tabs(["Dữ liệu nguồn (Up_Data)", "Lịch sử tra cứu (History)"])
-    
-    with tab1:
-        st.dataframe(conn.read(worksheet="Up_Data", ttl=0), use_container_width=True)
-    with tab2:
-        st.dataframe(conn.read(worksheet="History", ttl=0), use_container_width=True)
+    # Form thêm khách hàng mới
+    with st.expander("➕ Thêm khách hàng mới", expanded=True):
+        with st.form("add_client"):
+            col1, col2 = st.columns(2)
+            n_name = col1.text_input("Họ và Tên:")
+            n_dob = col2.text_input("Ngày sinh (Mã 8 số):")
+            n_phone = col1.text_input("SĐT (tùy chọn):")
+            n_scd = col2.text_input("Số Chủ Đạo:")
+            n_sdm = st.text_input("Số Định Mệnh:")
+            btn_add = st.form_submit_button("Lưu vào Google Sheets")
+            
+        if btn_add:
+            if n_name and n_dob:
+                df_source = conn.read(worksheet="Up_Data", ttl=0)
+                new_row = pd.DataFrame([{"Họ Tên": n_name, "Ngày Sinh": f"'{n_dob}", "SĐT": n_phone, "Số Chủ Đạo": n_scd, "Số Định Mệnh": n_sdm}])
+                updated_df = pd.concat([df_source, new_row], ignore_index=True)
+                conn.create(worksheet="Up_Data", data=updated_df)
+                st.success(f"Đã thêm thành công {n_name}!")
+                st.rerun()
+
+    # Hiển thị và Tìm kiếm
+    st.subheader("Danh sách hiện tại")
+    df_view = conn.read(worksheet="Up_Data", ttl=0)
+    search = st.text_input("Tìm kiếm tên trong danh sách:")
+    if search:
+        df_view = df_view[df_view.iloc[:, 0].str.contains(search, case=False, na=False)]
+    st.dataframe(df_view, use_container_width=True)
+
+# --- 6. XEM NHẬT KÝ ---
+elif menu == "Xem nhật ký (History)":
+    st.title("📋 Nhật Ký Tra Cứu")
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df_hist = conn.read(worksheet="History", ttl=0)
+    st.dataframe(df_hist.sort_index(ascending=False), use_container_width=True)
