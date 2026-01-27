@@ -6,36 +6,53 @@ import re
 from datetime import datetime, timedelta
 
 # --- 1. CẤU HÌNH & CSS GIAO DIỆN ---
-import streamlit as st
-
-st.markdown(
-    """
-    <style>
-    /* 1. Chỉ ẩn duy nhất nút Manage app (nút màu đen) */
-    /* Chúng ta nhắm vào thuộc tính data-testid của nó */
-    div[data-testid="stStatusWidget"] {
-        display: none !important;
-    }
-
-    /* 2. Ẩn thanh header phía trên (nơi có chữ Fork, Share...) */
-    header {
-        visibility: hidden !important;
-        height: 0px !important;
-    }
-
-    /* 3. TUYỆT ĐỐI KHÔNG ẨN FOOTER HOẶC ANY DIV KHÁC */
-    /* Điều này giúp các nút hỗ trợ của bạn vẫn hiển thị bình thường */
-    
-    /* Tùy chỉnh thêm: Đẩy nội dung lên sát trên cùng cho đẹp */
-    .main .block-container {
-        padding-top: 1rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+st.set_page_config(
+    page_title="Tra Cứu Thần Số Học VIP",
+    page_icon="🔮",
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
 
-# App content của bạn tiếp tục ở đây...
+# Biến cấu hình (BẠN HÃY THAY ĐỔI LINK CỦA BẠN Ở ĐÂY)
+APP_URL = "https://share.streamlit.io/..." # Link app của bạn sau khi deploy
+ADMIN_ZALO = "0909000xxx" # Số điện thoại Zalo Admin
+ADMIN_EMAIL = "admin@thansohoc.com"
+ADMIN_PHONE = "0909.000.xxx"
+
+# CSS tùy chỉnh để làm đẹp
+st.markdown("""
+    <style>
+    /* Ẩn menu mặc định */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
+    /* Tùy chỉnh card kết quả */
+    .result-card {
+        background-color: #f0f2f6;
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #ff4b4b;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .big-number {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ff4b4b;
+    }
+    .label-text {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #31333F;
+    }
+    
+    /* Ẩn trang trí mặc định của Streamlit */
+    [data-testid="stToolbar"] {display: none;}
+    [data-testid="stDecoration"] {display: none;}
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
