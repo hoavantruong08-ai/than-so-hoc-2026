@@ -103,7 +103,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 with st.container(border=True):
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        name_in = st.text_input("Họ và Tên (viết thường,VD : Nguyễn Văn A):", placeholder="Nguyen Van A")
+        name_in = st.text_input("Họ và Tên (viết thường,VD : luu xuan quang):", placeholder="Nguyen Van A")
     with col_input2:
         dob_in = st.text_input("Mã Ngày Sinh (Ví dụ: 01101972):", placeholder="ddmmyyyy")
     
