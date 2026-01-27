@@ -19,24 +19,23 @@ ADMIN_ZALO = "0909000xxx"
 ADMIN_EMAIL = "admin@thansohoc.com"
 ADMIN_PHONE = "0909.000.xxx"
 
-# CSS ĐÃ SỬA: Chỉ ẩn nút Manage app và Deploy, giữ nguyên Header/Toolbar để tránh lỗi giao diện
+# CSS SỬA LỖI: Chỉ tập trung ẩn các nút hệ thống, giữ nguyên Header để không lỗi giao diện
 st.markdown("""
     <style>
     /* 1. Ẩn nút Deploy và Footer mặc định */
     .stDeployButton {display:none !important;}
     footer {visibility: hidden !important;}
     
-    /* 2. Ẩn nút "Manage app" ở góc dưới bên phải */
+    /* 2. Ẩn nút "Manage app" góc dưới phải */
     div[data-testid="stStatusWidget"] {display: none !important;}
-    button[title="Manage app"] {display: none !important;}
     
-    /* 3. Đảm bảo nội dung không bị đẩy lên quá sát hoặc bị che */
+    /* 3. Đảm bảo nội dung không bị đẩy quá sát */
     .main .block-container {
-        padding-top: 3rem !important;
-        padding-bottom: 3rem !important;
+        padding-top: 5rem !important;
+        padding-bottom: 5rem !important;
     }
 
-    /* Tùy chỉnh card kết quả (Giữ nguyên của bạn) */
+    /* Style card của bạn */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
