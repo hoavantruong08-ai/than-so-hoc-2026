@@ -6,19 +6,16 @@ import re
 
 # --- CẤU HÌNH ---
 CLIENT_PASSWORD = "khachhang2026" 
-
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
-# Hàm làm sạch văn bản: Bỏ dấu, bỏ khoảng trắng, về chữ thường
-def ultra_clean(text):
+# Hàm làm sạch tuyệt đối: Coi tất cả là chuỗi ký tự, bỏ dấu, bỏ cách, bỏ mọi ký tự lạ
+def clean_id(text):
     if not text or str(text) == "nan": return ""
-    # Chuyển về dạng chuẩn NFD để tách dấu
+    # Chuyển về dạng chuẩn để tách dấu
     text = unicodedata.normalize('NFD', str(text))
-    # Loại bỏ các ký tự dấu
     text = ''.join([c for c in text if unicodedata.category(c) != 'Mn'])
-    # Xử lý riêng chữ đ/Đ
     text = text.replace('đ', 'd').replace('Đ', 'D')
-    # Loại bỏ tất cả những gì không phải chữ và số, rồi viết thường
+    # Chỉ giữ lại chữ cái và số (biến ngày sinh thành chuỗi số định danh)
     return re.sub(r'[^a-zA-Z0-9]', '', text).lower()
 
 if "client_auth" not in st.session_state:
@@ -26,50 +23,50 @@ if "client_auth" not in st.session_state:
 
 if not st.session_state["client_auth"]:
     st.title("🔮 Cổng Tra Cứu")
-    pwd = st.text_input("Mật khẩu truy cập:", type="password")
+    pwd = st.text_input("Mật khẩu:", type="password")
     if st.button("Truy cập"):
         if pwd == CLIENT_PASSWORD:
             st.session_state["client_auth"] = True
             st.rerun()
-        else: st.error("Sai mật khẩu")
     st.stop()
 
-# --- PHẦN TRA CỨU CHÍNH ---
+# --- TRA CỨU ---
 st.title("🔍 Tra Cứu Thần Số Học")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-name_in = st.text_input("Nhập Họ và Tên (không cần dấu):")
-dob_in = st.text_input("Nhập Ngày sinh (ví dụ: 26031990):")
+name_in = st.text_input("Nhập Họ và Tên (viết liền hoặc có dấu đều được):")
+dob_in = st.text_input("Nhập Mã Ngày Sinh (ví dụ: 26031990):")
 
 if st.button("Tra cứu ngay"):
     if name_in and dob_in:
         try:
-            # Ép App đọc dữ liệu mới nhất, không dùng cache
+            # Đọc dữ liệu mới nhất (ttl=0)
             df = conn.read(ttl=0)
             
-            # Làm sạch dữ liệu trong Sheet để đối soát
-            # Cột 0 là Họ Tên, Cột 1 là Ngày Sinh
-            df['name_check'] = df.iloc[:, 0].apply(ultra_clean)
-            df['dob_check'] = df.iloc[:, 1].apply(ultra_clean)
+            # Ép kiểu toàn bộ bảng về String để xử lý như chuỗi định danh
+            df = df.astype(str)
             
-            # Làm sạch dữ liệu người dùng nhập
-            search_name = ultra_clean(name_in)
-            search_dob = ultra_clean(dob_in)
+            # Tạo bản sao để đối soát (clean ID)
+            # Cột 0: Họ Tên, Cột 1: Ngày Sinh
+            df['name_id'] = df.iloc[:, 0].apply(clean_id)
+            df['dob_id'] = df.iloc[:, 1].apply(clean_id)
             
-            # Thực hiện so khớp
-            result = df[(df['name_check'] == search_name) & (df['dob_check'] == search_dob)]
+            search_name = clean_id(name_in)
+            search_dob = clean_id(dob_in)
             
-            if not result.empty:
-                st.success(f"Tìm thấy kết quả cho: **{result.iloc[0, 0]}**")
-                col1, col2 = st.columns(2)
-                # Cột 3 là Số Chủ Đạo, Cột 4 là Số Định Mệnh
-                col1.metric("Số Chủ Đạo", result.iloc[0, 3])
-                col2.metric("Số Định Mệnh", result.iloc[0, 4])
+            # Tìm kiếm dòng khớp cả 2 mã định danh
+            match = df[(df['name_id'] == search_name) & (df['dob_id'] == search_dob)]
+            
+            if not match.empty:
+                st.success(f"Kết quả cho: **{match.iloc[0, 0]}**")
+                c1, c2 = st.columns(2)
+                # Lấy dữ liệu ở cột D (chỉ mục 3) và E (chỉ mục 4)
+                c1.metric("Số Chủ Đạo", match.iloc[0, 3])
+                c2.metric("Số Định Mệnh", match.iloc[0, 4])
             else:
                 st.error("❌ Không tìm thấy thông tin. Hãy kiểm tra lại dữ liệu trong Sheet!")
-                # Debug ẩn để bạn tự kiểm tra
-                with st.expander("Kiểm tra lỗi kỹ thuật"):
-                    st.write("Dữ liệu bạn nhập đã làm sạch:", search_name, "|", search_dob)
-                    st.write("Dòng đầu tiên trong Sheet đã làm sạch:", df['name_check'].iloc[0], "|", df['dob_check'].iloc[0])
+                with st.expander("Dữ liệu đối soát (Debug)"):
+                    st.write("Mã bạn nhập:", search_name, "|", search_dob)
+                    st.write("Mã trong Sheet:", df['name_id'].iloc[0], "|", df['dob_id'].iloc[0])
         except Exception as e:
-            st.error(f"Lỗi hệ thống: {e}")
+            st.error(f"Lỗi kết nối: {e}")
