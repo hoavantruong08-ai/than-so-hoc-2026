@@ -3,20 +3,18 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import unicodedata
 import re
+from datetime import datetime, timedelta
 
 # --- CẤU HÌNH ---
 CLIENT_PASSWORD = "khachhang2026" 
 st.set_page_config(page_title="Tra Cứu Thần Số Học", page_icon="🔮")
 
-# Hàm làm sạch ID: Ép về văn bản, bỏ dấu .0 và mọi ký tự không phải số/chữ
 def clean_id(text):
     if not text or str(text) == "nan": return ""
-    # Chuyển sang chuỗi, loại bỏ phần thập phân .0 nếu Google Sheets tự thêm vào
     s = str(text).split('.')[0] 
     s = unicodedata.normalize('NFD', s)
     s = ''.join([c for c in s if unicodedata.category(c) != 'Mn'])
     s = s.replace('đ', 'd').replace('Đ', 'D')
-    # Chỉ giữ lại chữ cái và số
     return re.sub(r'[^a-zA-Z0-9]', '', s).lower()
 
 if "client_auth" not in st.session_state:
@@ -41,11 +39,9 @@ dob_in = st.text_input("Ngày tháng năm sinh (Ví dụ: 26031990):")
 if st.button("Tra cứu ngay"):
     if name_in and dob_in:
         try:
-            # Luôn đọc dữ liệu mới nhất
+            # 1. Đọc dữ liệu từ tab nguồn (giả định tab 1 là Up_Data)
             df = conn.read(ttl=0)
             
-            # Xử lý dữ liệu đối soát
-            # Ép cột Tên (0) và cột Ngày sinh (1) về dạng ID sạch
             df['name_match'] = df.iloc[:, 0].apply(clean_id)
             df['dob_match'] = df.iloc[:, 1].apply(clean_id)
             
@@ -55,20 +51,39 @@ if st.button("Tra cứu ngay"):
             match = df[(df['name_match'] == s_name) & (df['dob_match'] == s_dob)]
             
             if not match.empty:
-                st.success(f"Kết quả cho: **{match.iloc[0, 0]}**")
-                c1, c2 = st.columns(2)
+                res_full_name = match.iloc[0, 0]
+                st.success(f"Kết quả cho: **{res_full_name}**")
                 
-                # Hiển thị kết quả Số Chủ Đạo (cột 3) và Số Định Mệnh (cột 4)
-                # Dùng clean_id để xóa luôn dấu .0 ở kết quả hiển thị cho đẹp
+                c1, c2 = st.columns(2)
                 scd = clean_id(match.iloc[0, 3]).upper()
                 sdm = clean_id(match.iloc[0, 4]).upper()
-                
                 c1.metric("Số Chủ Đạo", scd)
                 c2.metric("Số Định Mệnh", sdm)
+
+                # --- PHẦN GHI LỊCH SỬ (CẬP NHẬT) ---
+                try:
+                    # Lấy giờ VN
+                    now_vn = (datetime.now() + timedelta(hours=7)).strftime("%d/%m/%Y %H:%M:%S")
+                    
+                    # Tạo dòng log mới
+                    new_log = pd.DataFrame([{
+                        "Thời Gian Tra Cứu": now_vn,
+                        "Họ Và Tên": res_full_name,
+                        "Ngày Sinh": f"'{s_dob}", # Thêm dấu nháy đơn để tránh Google đổi định dạng số
+                        "Trạng Thái": "Thành công"
+                    }])
+                    
+                    # Đọc sheet History riêng biệt
+                    history_df = conn.read(worksheet="History", ttl=0)
+                    
+                    # Kết hợp dữ liệu cũ và mới
+                    updated_history = pd.concat([history_df, new_log], ignore_index=True)
+                    
+                    # Ghi đè lại vào worksheet History
+                    conn.update(worksheet="History", data=updated_history)
+                except Exception as log_err:
+                    st.warning("⚠️ Đã hiện kết quả nhưng không thể ghi lịch sử. Admin vui lòng kiểm tra tab 'History'.")
             else:
                 st.error("❌ Không tìm thấy thông tin phù hợp.")
-                with st.expander("Kiểm tra mã đối soát"):
-                    st.write("Mã bạn nhập:", s_name, "|", s_dob)
-                    st.write("Mã trong Sheet:", df['name_match'].iloc[0], "|", df['dob_match'].iloc[0])
         except Exception as e:
             st.error(f"Lỗi hệ thống: {e}")
