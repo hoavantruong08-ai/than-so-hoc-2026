@@ -22,13 +22,17 @@ ADMIN_PHONE = "0909.000.xxx"
 # CSS tùy chỉnh để làm đẹp
 st.markdown("""
     <style>
-    /* Ẩn menu mặc định */
+    /* 1. Ẩn menu, footer và header mặc định */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
     
-    /* Tùy chỉnh card kết quả */
+    /* 2. Ẩn nút "Manage app" và thanh trạng thái góc dưới bên phải */
+    [data-testid="stStatusWidget"] {visibility: hidden;}
+    button[title="View source"], .viewerBadge_link__1S137 {display: none !important;}
+
+    /* 3. Tùy chỉnh card kết quả */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -48,12 +52,11 @@ st.markdown("""
         color: #31333F;
     }
     
-    /* Ẩn trang trí mặc định của Streamlit */
+    /* 4. Ẩn trang trí nhưng GIỮ LẠI giao diện cần thiết */
     [data-testid="stToolbar"] {display: none;}
     [data-testid="stDecoration"] {display: none;}
     </style>
     """, unsafe_allow_html=True)
-
 # --- 2. HÀM XỬ LÝ DỮ LIỆU ---
 def clean_id(text):
     if not text or str(text) == "nan": return ""
