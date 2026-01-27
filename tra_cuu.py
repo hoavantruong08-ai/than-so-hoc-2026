@@ -19,32 +19,37 @@ ADMIN_ZALO = "0909000xxx"
 ADMIN_EMAIL = "admin@thansohoc.com"
 ADMIN_PHONE = "0909.000.xxx"
 
-# --- CSS TRIỆT ĐỂ: ẨN MANAGE APP & LÀM ĐẸP ---
+# --- CSS ĐÃ SỬA: CHỈ ẨN NÚT MANAGE APP & GIỮ NGUYÊN TÁC VỤ ---
 st.markdown("""
     <style>
-    /* ẨN HEADER, FOOTER VÀ MENU GỐC */
-    header, footer, #MainMenu {
-        visibility: hidden !important;
-        height: 0 !important;
-    }
-
-    /* ẨN TRIỆT ĐỂ THANH QUẢN TRỊ (MANAGE APP, HOSTED WITH STREAMLIT) */
-    /* Dùng display: none !important để xóa bỏ hoàn toàn khỏi giao diện */
-    div[data-testid="stStatusWidget"], 
-    .stAppToolbar, 
-    .stDeployButton,
-    div[class*="viewerBadge"],
-    div[class*="stAppDeployButton"],
-    [data-testid="stDecoration"] {
+    /* 1. KHÔNG ẩn MainMenu, header hay footer để giữ các tác vụ admin */
+    #MainMenu {visibility: visible;}
+    header {visibility: visible;}
+    
+    /* 2. CHỈ ẨN NÚT "MANAGE APP" VÀ LOGO STREAMLIT GÓC DƯỚI BÊN PHẢI */
+    /* Nhắm vào nút Manage App màu đen */
+    div[data-testid="stStatusWidget"] {
         display: none !important;
     }
 
-    /* Đảm bảo Sidebar vẫn hiển thị và nội dung không bị đẩy lên quá cao */
-    .main .block-container {
-        padding-top: 2rem;
+    /* Nhắm vào nút Hosted with Streamlit màu đỏ/trắng */
+    .viewerBadge_container__1QSob, 
+    .viewerBadge_link__1S137,
+    [class*="viewerBadge"] {
+        display: none !important;
     }
 
-    /* Tùy chỉnh card kết quả (Giữ nguyên logic hiển thị của bạn) */
+    /* Loại bỏ khoảng trống thừa ở cuối trang do các nút này để lại */
+    footer {
+        display: none !important;
+    }
+
+    /* 3. Đảm bảo Sidebar (Tác vụ) luôn hiện ở cả 2 bên */
+    [data-testid="stSidebar"] {
+        display: flex !important;
+    }
+
+    /* Giữ nguyên card kết quả của bạn */
     .result-card {
         background-color: #f0f2f6;
         padding: 20px;
@@ -52,18 +57,6 @@ st.markdown("""
         border: 2px solid #ff4b4b;
         text-align: center;
         margin-bottom: 20px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .big-number {
-        font-size: 3.5rem;
-        font-weight: bold;
-        color: #ff4b4b;
-        margin: 10px 0;
-    }
-    .label-text {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #31333F;
     }
     </style>
     """, unsafe_allow_html=True)
